@@ -20,6 +20,11 @@ AVanguard::AVanguard()
 	GetCharacterMovement()->bOrientRotationToMovement = true; 
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 400.f, 0.f);
 
+	GetCharacterMovement()->JumpZVelocity = 700.f;
+	GetCharacterMovement()->AirControl = 0.25f;
+	GetCharacterMovement()->MaxWalkSpeed = 500.f;
+	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
+
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> SM(TEXT("SkeletalMesh'/Game/BattleRobot/Mesh/SK_BattleRobot.SK_BattleRobot'"));
 	if (SM.Succeeded())
 	{
@@ -34,7 +39,7 @@ AVanguard::AVanguard()
 	_SpringArm->bUsePawnControlRotation = true;
 	_SpringArm->SetRelativeLocationAndRotation(FVector(0.f, 0.f, 500.f), FRotator(-30.f, 0.f, 0.f));
 
-	_Camera->SetupAttachment(_SpringArm);
+	_Camera->SetupAttachment(_SpringArm, USpringArmComponent::SocketName);
 	_Camera->bUsePawnControlRotation = false;
 
 	GetMesh()->SetRelativeLocationAndRotation(FVector(0.f, 0.f, -88.f), FRotator(0.f, -90.f, 0.f));
@@ -58,6 +63,9 @@ void AVanguard::Tick(float DeltaTime)
 void AVanguard::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+	PlayerInputComponent->BindAction(TEXT("Jump"), IE_Pressed, this, &ACharacter::Jump);
+	PlayerInputComponent->BindAction(TEXT("Jump"), IE_Released, this, &ACharacter::StopJumping);
 
 	PlayerInputComponent->BindAxis(TEXT("ForwardBackward"), this,  &AVanguard::ForwardBackward);
 	PlayerInputComponent->BindAxis(TEXT("RightLeft"), this, &AVanguard::RightLeft);
