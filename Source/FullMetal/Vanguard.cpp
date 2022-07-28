@@ -13,6 +13,9 @@ AVanguard::AVanguard()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	// Set size for collision capsule
+	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
+
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
@@ -37,7 +40,7 @@ AVanguard::AVanguard()
 	_SpringArm->SetupAttachment(GetCapsuleComponent());
 	_SpringArm->TargetArmLength = 800.f;
 	_SpringArm->bUsePawnControlRotation = true;
-	_SpringArm->SetRelativeLocationAndRotation(FVector(0.f, 0.f, 500.f), FRotator(-30.f, 0.f, 0.f));
+	_SpringArm->SetRelativeLocationAndRotation(FVector(0.f, 0.f, 300.f), FRotator(-30.f, 0.f, 0.f));
 
 	_Camera->SetupAttachment(_SpringArm, USpringArmComponent::SocketName);
 	_Camera->bUsePawnControlRotation = false;
@@ -56,7 +59,6 @@ void AVanguard::BeginPlay()
 void AVanguard::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 // Called to bind functionality to input
