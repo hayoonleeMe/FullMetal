@@ -14,16 +14,16 @@ AVanguard::AVanguard()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	// Set size for collision capsule
+	// TODO : 콜리전 범위 수정 필요
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
-	// 컨트롤러가 회전할 때 캐릭터가 같이 회전하는 것을 방지한다.
+	// Z축을 제외하고 컨트롤러가 회전할 때 캐릭터가 같이 회전하는 것을 방지한다.
 	bUseControllerRotationPitch = false;
-	bUseControllerRotationYaw = false;
+	bUseControllerRotationYaw = true;
 	bUseControllerRotationRoll = false;
 
 	// 캐릭터가 가속하는 방향으로 RotationRate의 속도로 회전하도록 한다.
-	GetCharacterMovement()->bOrientRotationToMovement = true; 
+	GetCharacterMovement()->bOrientRotationToMovement = false; 
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 400.f, 0.f);
 
 	GetCharacterMovement()->JumpZVelocity = 500.f; // 점프 시 시작속도.
@@ -43,11 +43,11 @@ AVanguard::AVanguard()
 	_Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("CAMERA"));
 
 	_SpringArm->SetupAttachment(GetCapsuleComponent());
-	_SpringArm->TargetArmLength = 800.f;
+	_SpringArm->TargetArmLength = 1000.f;
 	// 스프링암을 컨트롤러 로테이션으로 회전시켜 마우스를 회전했을 때 움직이는 컨트롤러의 회전대로 움직인다. 
 	// 따라서 마우스를 회전하는대로 스프림암도 회전한다.
 	_SpringArm->bUsePawnControlRotation = true;	
-	_SpringArm->SetRelativeLocationAndRotation(FVector(0.f, 0.f, 300.f), FRotator(-30.f, 0.f, 0.f));
+	_SpringArm->SetRelativeLocationAndRotation(FVector(0.f, 0.f, 400.f), FRotator(-40.f, 0.f, 0.f));
 
 	_Camera->SetupAttachment(_SpringArm, USpringArmComponent::SocketName);
 
@@ -84,7 +84,7 @@ void AVanguard::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAxis(TEXT("ForwardBackward"), this,  &AVanguard::ForwardBackward);
 	PlayerInputComponent->BindAxis(TEXT("RightLeft"), this, &AVanguard::RightLeft);
 
-	PlayerInputComponent->BindAxis(TEXT("TurnRightLeft"), this, &APawn::AddControllerYawInput);
+	PlayerInputComponent->BindAxis(TEXT("TurnRightLeft"), this, &AVanguard::TurnRightLeft);
 	PlayerInputComponent->BindAxis(TEXT("LookUpDown"), this, &APawn::AddControllerPitchInput);
 }
 
@@ -101,29 +101,39 @@ void AVanguard::ForwardBackward(float Value)
 {
 	if ((Controller != nullptr) && (Value != 0.0f))
 	{
-		// find out which way is forward
-		const FRotator Rotation = Controller->GetControlRotation();
-		const FRotator YawRotation(0, Rotation.Yaw, 0);
+		//// find out which way is forward
+		//const FRotator Rotation = Controller->GetControlRotation();
+		//const FRotator YawRotation(0, Rotation.Yaw, 0);
 
-		// get forward vector
-		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-		AddMovementInput(Direction, Value);
+		//// get forward vector
+		//const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+		//AddMovementInput(Direction, Value);
+
+		AddMovementInput(GetActorForwardVector(), Value);
 	}
+
 }
 
 void AVanguard::RightLeft(float Value)
 {
 	if ((Controller != nullptr) && (Value != 0.0f))
 	{
-		// find out which way is right
-		const FRotator Rotation = Controller->GetControlRotation();
-		const FRotator YawRotation(0, Rotation.Yaw, 0);
+		//// find out which way is right
+		//const FRotator Rotation = Controller->GetControlRotation();
+		//const FRotator YawRotation(0, Rotation.Yaw, 0);
 
-		// get right vector 
-		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-		// add movement in that direction
-		AddMovementInput(Direction, Value);
+		//// get right vector 
+		//const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+		//// add movement in that direction
+		//AddMovementInput(Direction, Value);
+
+		AddMovementInput(GetActorRightVector(), Value);
 	}
+}
+
+void AVanguard::TurnRightLeft(float Value)
+{
+	AddControllerYawInput(Value * _YawAmount);
 }
 
 void AVanguard::OnAwakeMontageEnded(UAnimMontage* Montage, bool bInterrupted)
@@ -131,5 +141,6 @@ void AVanguard::OnAwakeMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 	if (Montage->GetName() == TEXT("BattleRobot_Skeleton_Montage"))
 	{
 		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+		_YawAmount = 1;
 	}
 }

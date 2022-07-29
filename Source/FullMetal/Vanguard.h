@@ -30,6 +30,7 @@ public:
 
 	void ForwardBackward(float Value);
 	void RightLeft(float Value);
+	void TurnRightLeft(float Value);
 
 	UFUNCTION()
 	void OnAwakeMontageEnded(UAnimMontage* Montage, bool bInterrupted);
@@ -43,4 +44,6 @@ private:
 
 	UPROPERTY()
 	class URobotAnimInstance* _AnimInstance;
+
+	int32 _YawAmount = 0;
 };
