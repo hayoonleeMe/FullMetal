@@ -14,8 +14,13 @@ class FULLMETAL_API URobotAnimInstance : public UAnimInstance
 {
 	GENERATED_BODY()
 
+	URobotAnimInstance();
+
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 	
+public:
+	void PlayAwakeMontage();
+
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Robot, meta = (AllowPrivateAccess = true))
 	FVector _Velocity;
@@ -25,4 +30,7 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Robot, meta = (AllowPrivateAccess = true))
 	bool _ShouldMove;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Robot, meta = (AllowPrivateAccess = true))
+	UAnimMontage* _AwakeMontage;
 };

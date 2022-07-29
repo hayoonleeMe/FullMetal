@@ -26,8 +26,13 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	virtual void PostInitializeComponents() override;
+
 	void ForwardBackward(float Value);
 	void RightLeft(float Value);
+
+	UFUNCTION()
+	void OnAwakeMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = true))
@@ -36,5 +41,6 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = true))
 	class UCameraComponent* _Camera;
 
-	
+	UPROPERTY()
+	class URobotAnimInstance* _AnimInstance;
 };
