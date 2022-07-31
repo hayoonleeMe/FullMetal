@@ -45,5 +45,5 @@ private:
 	UPROPERTY()
 	class URobotAnimInstance* _AnimInstance;
 
-	int32 _YawAmount = 0;
+	bool _CanTurnHorizontally = false;
 };

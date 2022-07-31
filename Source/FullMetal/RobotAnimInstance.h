@@ -14,6 +14,7 @@ class FULLMETAL_API URobotAnimInstance : public UAnimInstance
 {
 	GENERATED_BODY()
 
+public:
 	URobotAnimInstance();
 
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;

@@ -94,7 +94,12 @@ void AVanguard::PostInitializeComponents()
 
 	_AnimInstance = Cast<URobotAnimInstance>(GetMesh()->GetAnimInstance());
 
-	_AnimInstance->OnMontageEnded.AddDynamic(this, &AVanguard::OnAwakeMontageEnded);
+	if (_AnimInstance)
+	{
+		_AnimInstance->OnMontageEnded.AddDynamic(this, &AVanguard::OnAwakeMontageEnded);
+	}
+
+	//_HUD->InitWidget();
 }
 
 void AVanguard::ForwardBackward(float Value)
@@ -133,7 +138,10 @@ void AVanguard::RightLeft(float Value)
 
 void AVanguard::TurnRightLeft(float Value)
 {
-	AddControllerYawInput(Value * _YawAmount);
+	if (!_CanTurnHorizontally)
+		return;
+
+	AddControllerYawInput(Value);
 }
 
 void AVanguard::OnAwakeMontageEnded(UAnimMontage* Montage, bool bInterrupted)
@@ -141,6 +149,6 @@ void AVanguard::OnAwakeMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 	if (Montage->GetName() == TEXT("BattleRobot_Skeleton_Montage"))
 	{
 		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
-		_YawAmount = 1;
+		_CanTurnHorizontally = true;
 	}
 }
