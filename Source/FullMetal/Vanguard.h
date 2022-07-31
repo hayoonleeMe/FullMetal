@@ -46,4 +46,9 @@ private:
 	class URobotAnimInstance* _AnimInstance;
 
 	bool _CanTurnHorizontally = false;
+
+public:
+	float _ForwardBackwardValue = 0;
+
+	float _RightLeftValue = 0;
 };

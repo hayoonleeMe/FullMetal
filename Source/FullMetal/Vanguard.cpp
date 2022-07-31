@@ -22,13 +22,9 @@ AVanguard::AVanguard()
 	bUseControllerRotationYaw = true;
 	bUseControllerRotationRoll = false;
 
-	// 캐릭터가 가속하는 방향으로 RotationRate의 속도로 회전하도록 한다.
-	GetCharacterMovement()->bOrientRotationToMovement = false; 
-	GetCharacterMovement()->RotationRate = FRotator(0.f, 400.f, 0.f);
-
 	GetCharacterMovement()->JumpZVelocity = 500.f; // 점프 시 시작속도.
 	GetCharacterMovement()->AirControl = 0.25f;	// 공중에서 움직일 수 있는 정도, 1이면 지면과 동일하게 이동.
-	GetCharacterMovement()->MaxWalkSpeed = 500.f; // 지면에서 이동 시 최대 속도, 공중에서 움직일 때에도 영향을 끼친다.
+	GetCharacterMovement()->MaxWalkSpeed = 1000.f; // 지면에서 이동 시 최대 속도, 공중에서 움직일 때에도 영향을 끼친다.
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f; // 속도를 직접적으로 낮추는 일정한 반대되는 힘이다.
 
 	// 스켈레탈 메시 설정
@@ -104,6 +100,8 @@ void AVanguard::PostInitializeComponents()
 
 void AVanguard::ForwardBackward(float Value)
 {
+	_ForwardBackwardValue = Value;
+
 	if ((Controller != nullptr) && (Value != 0.0f))
 	{
 		//// find out which way is forward
@@ -121,6 +119,8 @@ void AVanguard::ForwardBackward(float Value)
 
 void AVanguard::RightLeft(float Value)
 {
+	_RightLeftValue = Value;
+
 	if ((Controller != nullptr) && (Value != 0.0f))
 	{
 		//// find out which way is right

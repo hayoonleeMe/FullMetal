@@ -34,4 +34,10 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Robot, meta = (AllowPrivateAccess = true))
 	UAnimMontage* _AwakeMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Robot, meta = (AllowPrivateAccess = true))
+	float _Horizontal;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Robot, meta = (AllowPrivateAccess = true))
+	float _Vertical;
 };

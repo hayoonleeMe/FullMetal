@@ -22,7 +22,7 @@ void URobotAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	auto Pawn = TryGetPawnOwner();
 	if (IsValid(Pawn))
 	{
-		auto Character = Cast<ACharacter>(Pawn);
+		auto Character = Cast<AVanguard>(Pawn);
 		if (Character)
 		{
 			_Velocity = Character->GetVelocity();
@@ -31,6 +31,9 @@ void URobotAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 
 			FVector Accel = Character->GetCharacterMovement()->GetCurrentAcceleration();
 			_ShouldMove = (_Velocity.Size2D() > 3.f) && (Accel.X != 0 || Accel.Y != 0);
+
+			_Horizontal = Character->_RightLeftValue;
+			_Vertical = Character->_ForwardBackwardValue;
 		}
 	}
 }
