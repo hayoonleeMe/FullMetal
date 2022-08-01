@@ -7,6 +7,9 @@
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "RobotAnimInstance.h"
+#include "Projectile.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AVanguard::AVanguard()
@@ -52,6 +55,13 @@ AVanguard::AVanguard()
 	_Camera->bUsePawnControlRotation = false;	
 
 	GetMesh()->SetRelativeLocationAndRotation(FVector(0.f, 0.f, -88.f), FRotator(0.f, -90.f, 0.f));
+
+	//// 소환할 Projectile Class 로드
+	//static ConstructorHelpers::FClassFinder<AProjectile> PJ(TEXT("Blueprint'/Game/Blueprints/BP_Projectile.BP_Projectile_C'"));
+	//if (PJ.Succeeded())
+	//{
+	//	_ProjectileClass = PJ.Class;
+	//}
 }
 
 // Called when the game starts or when spawned
@@ -76,6 +86,9 @@ void AVanguard::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 	PlayerInputComponent->BindAction(TEXT("Jump"), IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction(TEXT("Jump"), IE_Released, this, &ACharacter::StopJumping);
+
+	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Pressed, this, &AVanguard::StartFire);
+	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Released, this, &AVanguard::StopFire);
 
 	PlayerInputComponent->BindAxis(TEXT("ForwardBackward"), this,  &AVanguard::ForwardBackward);
 	PlayerInputComponent->BindAxis(TEXT("RightLeft"), this, &AVanguard::RightLeft);
@@ -114,7 +127,6 @@ void AVanguard::ForwardBackward(float Value)
 
 		AddMovementInput(GetActorForwardVector(), Value);
 	}
-
 }
 
 void AVanguard::RightLeft(float Value)
@@ -150,5 +162,87 @@ void AVanguard::OnAwakeMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 	{
 		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 		_CanTurnHorizontally = true;
+		_CanFire = true;
 	}
+}
+
+bool AVanguard::GunTrace(FHitResult& Hit)
+{
+	FVector Location;
+	FRotator Rotation;
+	GetController()->GetPlayerViewPoint(Location, Rotation);
+	FVector End = Location + Rotation.Vector() * 15000.f;
+
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+
+	// ECC_GameTraceChannel1 : Camera
+	return GetWorld()->LineTraceSingleByChannel(Hit, Location, End, ECollisionChannel::ECC_GameTraceChannel1, Params);	
+}
+
+void AVanguard::Fire()
+{
+	if (!_CanFire)
+		return;
+
+	FName LeftMuzzleSocket(TEXT("muzzle_L"));
+	FName RightMuzzleSocket(TEXT("muzzle_R"));
+
+	FVector LeftMuzzle = GetMesh()->GetSocketLocation(LeftMuzzleSocket);
+	FVector RightMuzzle = GetMesh()->GetSocketLocation(RightMuzzleSocket);
+
+	FHitResult Hit;
+	FVector ProjectileTarget;
+
+	bool bResult = GunTrace(Hit);
+	if (bResult)
+	{
+		ProjectileTarget = Hit.ImpactPoint;
+
+		AActor* HitActor = Hit.GetActor();
+		if (HitActor != nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("HitActor : %s"), *HitActor->GetName());
+		}
+	}
+	else
+	{
+		ProjectileTarget = Hit.TraceEnd;
+	}
+
+	// 총구에서 발사체의 도착지점을 바라보는 Rotation을 구한다.
+	FRotator LeftRotation = UKismetMathLibrary::FindLookAtRotation(LeftMuzzle, ProjectileTarget);
+	FRotator RightRotation = UKismetMathLibrary::FindLookAtRotation(RightMuzzle, ProjectileTarget);
+
+	FTransform LeftTransform = UKismetMathLibrary::MakeTransform(LeftMuzzle, LeftRotation);
+	FTransform RightTransform = UKismetMathLibrary::MakeTransform(RightMuzzle, RightRotation);
+
+	FActorSpawnParameters ActorSpawnParams;
+	ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+	GetWorld()->SpawnActor<AActor>(_ProjectileClass, LeftTransform, ActorSpawnParams);
+	GetWorld()->SpawnActor<AActor>(_ProjectileClass, RightTransform, ActorSpawnParams);
+
+	if (_FireSound != nullptr)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, _FireSound, GetActorLocation(), .5f);
+	}
+
+	// TODO : 상하체 따로 애니메이션 재생 필요, 현재는 _FireAnimation 재생안됨
+	if (_FireAnimation != nullptr && _AnimInstance != nullptr)
+	{
+		_AnimInstance->Montage_Play(_FireAnimation, 1.f);
+	}
+}
+
+void AVanguard::StartFire()
+{
+	Fire();
+
+	GetWorldTimerManager().SetTimer(_TimerHandle_HandleRefire, this, &AVanguard::Fire, _TimeBetweenShots, true);
+}
+
+void AVanguard::StopFire()
+{
+	GetWorldTimerManager().ClearTimer(_TimerHandle_HandleRefire);
 }

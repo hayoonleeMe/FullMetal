@@ -28,12 +28,19 @@ public:
 
 	virtual void PostInitializeComponents() override;
 
+	UFUNCTION()
+		void OnAwakeMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+
+private:
 	void ForwardBackward(float Value);
 	void RightLeft(float Value);
 	void TurnRightLeft(float Value);
 
-	UFUNCTION()
-	void OnAwakeMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+	void StartFire();
+	void StopFire();
+	void Fire();
+
+	bool GunTrace(FHitResult& Hit);
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = true))
@@ -47,7 +54,23 @@ private:
 
 	bool _CanTurnHorizontally = false;
 
-public:
+	bool _CanFire = false;
+
+	UPROPERTY(EditAnywhere, Category = Weapon)
+	TSubclassOf<AActor> _ProjectileClass;
+
+	UPROPERTY(EditAnywhere, Category = Weapon)
+	USoundBase* _FireSound;
+
+	UPROPERTY(EditAnywhere, Category = Weapon)
+	UAnimMontage* _FireAnimation;
+
+	UPROPERTY(EditAnywhere, Category = Weapon)
+	float _TimeBetweenShots = 0.15f;
+
+	FTimerHandle _TimerHandle_HandleRefire;
+
+public: 
 	float _ForwardBackwardValue = 0;
 
 	float _RightLeftValue = 0;
