@@ -68,7 +68,6 @@ AVanguard::AVanguard()
 	// NiagaraComponent 로드
 	_LeftMuzzleFlash = CreateDefaultSubobject<UNiagaraComponent>(TEXT("LeftMuzzleFlash"));
 	_RightMuzzleFlash = CreateDefaultSubobject<UNiagaraComponent>(TEXT("RightMuzzleFlash"));
-
 	_LeftMuzzleFlash->SetupAttachment(GetMesh());
 	_RightMuzzleFlash->SetupAttachment(GetMesh());
 	_LeftMuzzleFlash->SetAsset(_MuzzleEffect);
@@ -197,6 +196,9 @@ void AVanguard::Fire()
 
 	FVector LeftMuzzleLocation = GetMesh()->GetSocketLocation(LeftMuzzleSocket);
 	FVector RightMuzzleLocation = GetMesh()->GetSocketLocation(RightMuzzleSocket);
+
+	_LeftMuzzleFlash->SetWorldLocation(LeftMuzzleLocation);
+	_RightMuzzleFlash->SetWorldLocation(RightMuzzleLocation);
 
 	FHitResult Hit;
 	FVector ProjectileTarget;
