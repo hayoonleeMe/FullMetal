@@ -1,16 +1,30 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-#include "RobotAnimInstance.h"
+ï»¿#include "RobotAnimInstance.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Vanguard.h"
+#include "Kismet/GameplayStatics.h"
 
 URobotAnimInstance::URobotAnimInstance()
 {
-	// AwakeMontage¸¦ ·ÎµåÇØ ¼³Á¤ÇÑ´Ù.
+	// _AwakeMontageë¥¼ ë¡œë“œí•´ ì„¤ì •í•œë‹¤.
 	static ConstructorHelpers::FObjectFinder<UAnimMontage> AM(TEXT("AnimMontage'/Game/Animations/BattleRobot_Skeleton_Montage.BattleRobot_Skeleton_Montage'"));
 	if (AM.Succeeded())
 	{
 		_AwakeMontage = AM.Object;
+	}
+
+	// _FootstepSound ë¡œë“œ.
+	static ConstructorHelpers::FObjectFinder<USoundBase> FS(TEXT("SoundWave'/Game/Sounds/Footstep.Footstep'"));
+	if (FS.Succeeded())
+	{
+		_FootstepSound = FS.Object;
+	}
+
+	// _FireMontage ë¡œë“œ.
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> FM(TEXT("AnimMontage'/Game/Animations/Fire_Montage.Fire_Montage'"));
+	if (FM.Succeeded())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("_FireMontage Load Success"));
+		_FireMontage = FM.Object;
 	}
 }
 
@@ -18,23 +32,28 @@ void URobotAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
 	Super::NativeUpdateAnimation(DeltaSeconds);
 
-	// ¾Ö´Ï¸ŞÀÌ¼Ç Àç»ı¿¡ ÇÊ¿äÇÑ µ¥ÀÌÅÍ¸¦ ¼öÁıÇÑ´Ù.
-	auto Pawn = TryGetPawnOwner();
-	if (IsValid(Pawn))
+	// ìºë¦­í„° ìºì‹±.
+	if (_Character == nullptr)
 	{
-		auto Character = Cast<AVanguard>(Pawn);
-		if (Character)
+		auto Pawn = TryGetPawnOwner();
+		if (IsValid(Pawn))
 		{
-			_Velocity = Character->GetVelocity();
-
-			_IsFalling = Character->GetMovementComponent()->IsFalling();
-
-			FVector Accel = Character->GetCharacterMovement()->GetCurrentAcceleration();
-			_ShouldMove = (_Velocity.Size2D() > 3.f) && (Accel.X != 0 || Accel.Y != 0);
-
-			_Horizontal = Character->_RightLeftValue;
-			_Vertical = Character->_ForwardBackwardValue;
+			_Character = Cast<AVanguard>(Pawn);
 		}
+	}
+
+	// ì• ë‹ˆë©”ì´ì…˜ ì¬ìƒì— í•„ìš”í•œ ë°ì´í„°ë¥¼ ìˆ˜ì§‘í•œë‹¤.
+	if (_Character != nullptr)
+	{
+		_Velocity = _Character->GetVelocity();
+
+		_IsFalling = _Character->GetMovementComponent()->IsFalling();
+
+		FVector Accel = _Character->GetCharacterMovement()->GetCurrentAcceleration();
+		_ShouldMove = (_Velocity.Size() > 3.f) && (Accel.X != 0 || Accel.Y != 0);
+
+		_Horizontal = _Character->_RightLeftValue;
+		_Vertical = _Character->_ForwardBackwardValue;
 	}
 }
 
@@ -43,5 +62,32 @@ void URobotAnimInstance::PlayAwakeMontage()
 	if (!Montage_IsPlaying(_AwakeMontage))
 	{
 		Montage_Play(_AwakeMontage, 1.f);
+	}
+}
+
+void URobotAnimInstance::PlayFireMontage(bool bIsPlay)
+{
+	if (bIsPlay)
+	{
+		if (!Montage_IsPlaying(_FireMontage))
+		{
+			Montage_Play(_FireMontage, 1.f);
+		}
+	}
+	else
+	{
+		if (Montage_IsPlaying(_FireMontage))
+		{
+			Montage_Stop(1.f, _FireMontage);
+		}
+	}
+	
+}
+
+void URobotAnimInstance::AnimNotify_Footstep()
+{
+	if (_FootstepSound != nullptr)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, _FootstepSound, _Character->GetActorLocation(), .5f);
 	}
 }

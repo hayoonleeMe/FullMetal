@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -29,12 +29,13 @@ public:
 	virtual void PostInitializeComponents() override;
 
 	UFUNCTION()
-		void OnAwakeMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+	void OnAwakeMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
 private:
 	void ForwardBackward(float Value);
 	void RightLeft(float Value);
 	void TurnRightLeft(float Value);
+	void LookUpDown(float Value);
 
 	void StartFire();
 	void StopFire();
@@ -52,10 +53,6 @@ private:
 	UPROPERTY()
 	class URobotAnimInstance* _AnimInstance;
 
-	bool _CanTurnHorizontally = false;
-
-	bool _CanFire = false;
-
 	UPROPERTY(EditAnywhere, Category = Weapon)
 	TSubclassOf<AActor> _ProjectileClass;
 
@@ -69,6 +66,17 @@ private:
 	float _TimeBetweenShots = 0.15f;
 
 	FTimerHandle _TimerHandle_HandleRefire;
+
+	UPROPERTY(EditAnywhere, Category = Weapon)
+	class UNiagaraSystem* _MuzzleEffect;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon, meta = (AllowPrivateAccess = true))
+	class UNiagaraComponent* _LeftMuzzleFlash;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon, meta = (AllowPrivateAccess = true))
+	class UNiagaraComponent* _RightMuzzleFlash;
+
+	bool _IsAwakeEnded = false;
 
 public: 
 	float _ForwardBackwardValue = 0;

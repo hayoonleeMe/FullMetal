@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Vanguard.h"
@@ -10,6 +10,8 @@
 #include "Projectile.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/GameplayStatics.h"
+#include "NiagaraSystem.h"
+#include "NiagaraComponent.h"
 
 // Sets default values
 AVanguard::AVanguard()
@@ -17,46 +19,67 @@ AVanguard::AVanguard()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	// TODO : Äİ¸®Àü ¹üÀ§ ¼öÁ¤ ÇÊ¿ä
+	// TODO : ì½œë¦¬ì „ ë²”ìœ„ ìˆ˜ì • í•„ìš”
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
-	// ZÃàÀ» Á¦¿ÜÇÏ°í ÄÁÆ®·Ñ·¯°¡ È¸ÀüÇÒ ¶§ Ä³¸¯ÅÍ°¡ °°ÀÌ È¸ÀüÇÏ´Â °ÍÀ» ¹æÁöÇÑ´Ù.
+	// Zì¶•ì„ ì œì™¸í•˜ê³  ì»¨íŠ¸ë¡¤ëŸ¬ê°€ íšŒì „í•  ë•Œ ìºë¦­í„°ê°€ ê°™ì´ íšŒì „í•˜ëŠ” ê²ƒì„ ë°©ì§€í•œë‹¤.
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = true;
 	bUseControllerRotationRoll = false;
 
-	GetCharacterMovement()->JumpZVelocity = 500.f; // Á¡ÇÁ ½Ã ½ÃÀÛ¼Óµµ.
-	GetCharacterMovement()->AirControl = 0.25f;	// °øÁß¿¡¼­ ¿òÁ÷ÀÏ ¼ö ÀÖ´Â Á¤µµ, 1ÀÌ¸é Áö¸é°ú µ¿ÀÏÇÏ°Ô ÀÌµ¿.
-	GetCharacterMovement()->MaxWalkSpeed = 1000.f; // Áö¸é¿¡¼­ ÀÌµ¿ ½Ã ÃÖ´ë ¼Óµµ, °øÁß¿¡¼­ ¿òÁ÷ÀÏ ¶§¿¡µµ ¿µÇâÀ» ³¢Ä£´Ù.
-	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f; // ¼Óµµ¸¦ Á÷Á¢ÀûÀ¸·Î ³·Ãß´Â ÀÏÁ¤ÇÑ ¹İ´ëµÇ´Â ÈûÀÌ´Ù.
+	GetCharacterMovement()->JumpZVelocity = 500.f; // ì í”„ ì‹œ ì‹œì‘ì†ë„.
+	GetCharacterMovement()->AirControl = 0.25f;	// ê³µì¤‘ì—ì„œ ì›€ì§ì¼ ìˆ˜ ìˆëŠ” ì •ë„, 1ì´ë©´ ì§€ë©´ê³¼ ë™ì¼í•˜ê²Œ ì´ë™.
+	GetCharacterMovement()->MaxWalkSpeed = 1000.f; // ì§€ë©´ì—ì„œ ì´ë™ ì‹œ ìµœëŒ€ ì†ë„, ê³µì¤‘ì—ì„œ ì›€ì§ì¼ ë•Œì—ë„ ì˜í–¥ì„ ë¼ì¹œë‹¤.
+	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f; // ì†ë„ë¥¼ ì§ì ‘ì ìœ¼ë¡œ ë‚®ì¶”ëŠ” ì¼ì •í•œ ë°˜ëŒ€ë˜ëŠ” í˜ì´ë‹¤.
 
-	// ½ºÄÌ·¹Å» ¸Ş½Ã ¼³Á¤
+	// ìŠ¤ì¼ˆë ˆíƒˆ ë©”ì‹œ ì„¤ì •
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> SM(TEXT("SkeletalMesh'/Game/BattleRobot/Mesh/SK_BattleRobot.SK_BattleRobot'"));
 	if (SM.Succeeded())
 	{
 		GetMesh()->SetSkeletalMesh(SM.Object);
 	}
 
-	// ½ºÇÁ¸µ¾Ï, Ä«¸Ş¶ó ÄÄÆ÷³ÍÆ®¸¦ ºÎÂøÇÏ°í ±âº» °ªÀ» ¼³Á¤ÇÑ´Ù.
+	// ìŠ¤í”„ë§ì•”, ì¹´ë©”ë¼ ì»´í¬ë„ŒíŠ¸ë¥¼ ë¶€ì°©í•˜ê³  ê¸°ë³¸ ê°’ì„ ì„¤ì •í•œë‹¤.
 	_SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SPRINGARM"));
 	_Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("CAMERA"));
 
 	_SpringArm->SetupAttachment(GetCapsuleComponent());
 	_SpringArm->TargetArmLength = 1000.f;
-	// ½ºÇÁ¸µ¾ÏÀ» ÄÁÆ®·Ñ·¯ ·ÎÅ×ÀÌ¼ÇÀ¸·Î È¸Àü½ÃÄÑ ¸¶¿ì½º¸¦ È¸ÀüÇßÀ» ¶§ ¿òÁ÷ÀÌ´Â ÄÁÆ®·Ñ·¯ÀÇ È¸Àü´ë·Î ¿òÁ÷ÀÎ´Ù. 
-	// µû¶ó¼­ ¸¶¿ì½º¸¦ È¸ÀüÇÏ´Â´ë·Î ½ºÇÁ¸²¾Ïµµ È¸ÀüÇÑ´Ù.
+	// ìŠ¤í”„ë§ì•”ì„ ì»¨íŠ¸ë¡¤ëŸ¬ ë¡œí…Œì´ì…˜ìœ¼ë¡œ íšŒì „ì‹œì¼œ ë§ˆìš°ìŠ¤ë¥¼ íšŒì „í–ˆì„ ë•Œ ì›€ì§ì´ëŠ” ì»¨íŠ¸ë¡¤ëŸ¬ì˜ íšŒì „ëŒ€ë¡œ ì›€ì§ì¸ë‹¤. 
+	// ë”°ë¼ì„œ ë§ˆìš°ìŠ¤ë¥¼ íšŒì „í•˜ëŠ”ëŒ€ë¡œ ìŠ¤í”„ë¦¼ì•”ë„ íšŒì „í•œë‹¤.
 	_SpringArm->bUsePawnControlRotation = true;	
 	_SpringArm->SetRelativeLocationAndRotation(FVector(0.f, 0.f, 400.f), FRotator(-40.f, 0.f, 0.f));
 
 	_Camera->SetupAttachment(_SpringArm, USpringArmComponent::SocketName);
 
-	// Ä«¸Ş¶ó´Â ½ºÇÁ¸µ¾Ï°ú ´Ş¸® ÄÁÆ®·Ñ·¯ ·ÎÅ×ÀÌ¼Ç´ë·Î È¸Àü½ÃÅ°Áö ¾Ê´Â´Ù.
-	// µû¶ó¼­ ¸¶¿ì½º¸¦ È¸ÀüÇØµµ Ä«¸Ş¶ó´Â °è¼Ó Ä³¸¯ÅÍ¸¦ ºñÃá´Ù.
+	// ì¹´ë©”ë¼ëŠ” ìŠ¤í”„ë§ì•”ê³¼ ë‹¬ë¦¬ ì»¨íŠ¸ë¡¤ëŸ¬ ë¡œí…Œì´ì…˜ëŒ€ë¡œ íšŒì „ì‹œí‚¤ì§€ ì•ŠëŠ”ë‹¤.
+	// ë”°ë¼ì„œ ë§ˆìš°ìŠ¤ë¥¼ íšŒì „í•´ë„ ì¹´ë©”ë¼ëŠ” ê³„ì† ìºë¦­í„°ë¥¼ ë¹„ì¶˜ë‹¤.
 	_Camera->bUsePawnControlRotation = false;	
 
 	GetMesh()->SetRelativeLocationAndRotation(FVector(0.f, 0.f, -88.f), FRotator(0.f, -90.f, 0.f));
 
-	//// ¼ÒÈ¯ÇÒ Projectile Class ·Îµå
+	// MuzzleEffect NiagaraSystem Asset ë¡œë“œ
+	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> ME(TEXT("NiagaraSystem'/Game/Effects/N_MuzzleFlash.N_MuzzleFlash'"));
+	if (ME.Succeeded())
+	{
+		_MuzzleEffect = ME.Object;
+	}
+
+	// NiagaraComponent ë¡œë“œ
+	_LeftMuzzleFlash = CreateDefaultSubobject<UNiagaraComponent>(TEXT("LeftMuzzleFlash"));
+	_RightMuzzleFlash = CreateDefaultSubobject<UNiagaraComponent>(TEXT("RightMuzzleFlash"));
+
+	_LeftMuzzleFlash->SetupAttachment(GetMesh());
+	_RightMuzzleFlash->SetupAttachment(GetMesh());
+	_LeftMuzzleFlash->SetAsset(_MuzzleEffect);
+	_RightMuzzleFlash->SetAsset(_MuzzleEffect);
+
+	// TODO : ì í”„ ì‹œ MuzzleEffectê°€ ë”°ë¼ì˜¤ì§€ ì•ŠëŠ” í˜„ìƒ ê°œì„  í•„ìš”
+
+	_LeftMuzzleFlash->SetAutoActivate(false);
+	_RightMuzzleFlash->SetAutoActivate(false);
+
+	//// ì†Œí™˜í•  Projectile Class ë¡œë“œ
 	//static ConstructorHelpers::FClassFinder<AProjectile> PJ(TEXT("Blueprint'/Game/Blueprints/BP_Projectile.BP_Projectile_C'"));
 	//if (PJ.Succeeded())
 	//{
@@ -107,8 +130,6 @@ void AVanguard::PostInitializeComponents()
 	{
 		_AnimInstance->OnMontageEnded.AddDynamic(this, &AVanguard::OnAwakeMontageEnded);
 	}
-
-	//_HUD->InitWidget();
 }
 
 void AVanguard::ForwardBackward(float Value)
@@ -117,14 +138,6 @@ void AVanguard::ForwardBackward(float Value)
 
 	if ((Controller != nullptr) && (Value != 0.0f))
 	{
-		//// find out which way is forward
-		//const FRotator Rotation = Controller->GetControlRotation();
-		//const FRotator YawRotation(0, Rotation.Yaw, 0);
-
-		//// get forward vector
-		//const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-		//AddMovementInput(Direction, Value);
-
 		AddMovementInput(GetActorForwardVector(), Value);
 	}
 }
@@ -135,25 +148,23 @@ void AVanguard::RightLeft(float Value)
 
 	if ((Controller != nullptr) && (Value != 0.0f))
 	{
-		//// find out which way is right
-		//const FRotator Rotation = Controller->GetControlRotation();
-		//const FRotator YawRotation(0, Rotation.Yaw, 0);
-
-		//// get right vector 
-		//const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-		//// add movement in that direction
-		//AddMovementInput(Direction, Value);
-
 		AddMovementInput(GetActorRightVector(), Value);
 	}
 }
 
 void AVanguard::TurnRightLeft(float Value)
 {
-	if (!_CanTurnHorizontally)
+	if (!_IsAwakeEnded)
 		return;
 
 	AddControllerYawInput(Value);
+}
+
+void AVanguard::LookUpDown(float Value)
+{
+	float Angle = Value * 180;
+
+	AddControllerPitchInput(Value);
 }
 
 void AVanguard::OnAwakeMontageEnded(UAnimMontage* Montage, bool bInterrupted)
@@ -161,8 +172,7 @@ void AVanguard::OnAwakeMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 	if (Montage->GetName() == TEXT("BattleRobot_Skeleton_Montage"))
 	{
 		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
-		_CanTurnHorizontally = true;
-		_CanFire = true;
+		_IsAwakeEnded = true;
 	}
 }
 
@@ -182,14 +192,11 @@ bool AVanguard::GunTrace(FHitResult& Hit)
 
 void AVanguard::Fire()
 {
-	if (!_CanFire)
-		return;
-
 	FName LeftMuzzleSocket(TEXT("muzzle_L"));
 	FName RightMuzzleSocket(TEXT("muzzle_R"));
 
-	FVector LeftMuzzle = GetMesh()->GetSocketLocation(LeftMuzzleSocket);
-	FVector RightMuzzle = GetMesh()->GetSocketLocation(RightMuzzleSocket);
+	FVector LeftMuzzleLocation = GetMesh()->GetSocketLocation(LeftMuzzleSocket);
+	FVector RightMuzzleLocation = GetMesh()->GetSocketLocation(RightMuzzleSocket);
 
 	FHitResult Hit;
 	FVector ProjectileTarget;
@@ -210,12 +217,12 @@ void AVanguard::Fire()
 		ProjectileTarget = Hit.TraceEnd;
 	}
 
-	// ÃÑ±¸¿¡¼­ ¹ß»çÃ¼ÀÇ µµÂøÁöÁ¡À» ¹Ù¶óº¸´Â RotationÀ» ±¸ÇÑ´Ù.
-	FRotator LeftRotation = UKismetMathLibrary::FindLookAtRotation(LeftMuzzle, ProjectileTarget);
-	FRotator RightRotation = UKismetMathLibrary::FindLookAtRotation(RightMuzzle, ProjectileTarget);
+	// ì´êµ¬ì—ì„œ ë°œì‚¬ì²´ ëª©í‘œ ìœ„ì¹˜ê¹Œì§€ ë°”ë¼ë³´ëŠ” Rotation
+	FRotator LeftRotation = UKismetMathLibrary::FindLookAtRotation(LeftMuzzleLocation, ProjectileTarget);
+	FRotator RightRotation = UKismetMathLibrary::FindLookAtRotation(RightMuzzleLocation, ProjectileTarget);
 
-	FTransform LeftTransform = UKismetMathLibrary::MakeTransform(LeftMuzzle, LeftRotation);
-	FTransform RightTransform = UKismetMathLibrary::MakeTransform(RightMuzzle, RightRotation);
+	FTransform LeftTransform = UKismetMathLibrary::MakeTransform(LeftMuzzleLocation, LeftRotation);
+	FTransform RightTransform = UKismetMathLibrary::MakeTransform(RightMuzzleLocation, RightRotation);
 
 	FActorSpawnParameters ActorSpawnParams;
 	ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
@@ -223,20 +230,23 @@ void AVanguard::Fire()
 	GetWorld()->SpawnActor<AActor>(_ProjectileClass, LeftTransform, ActorSpawnParams);
 	GetWorld()->SpawnActor<AActor>(_ProjectileClass, RightTransform, ActorSpawnParams);
 
+	// ë°œì‚¬ ì†Œë¦¬ ì¬ìƒ
 	if (_FireSound != nullptr)
 	{
-		UGameplayStatics::PlaySoundAtLocation(this, _FireSound, GetActorLocation(), .5f);
-	}
-
-	// TODO : »óÇÏÃ¼ µû·Î ¾Ö´Ï¸ŞÀÌ¼Ç Àç»ı ÇÊ¿ä, ÇöÀç´Â _FireAnimation Àç»ı¾ÈµÊ
-	if (_FireAnimation != nullptr && _AnimInstance != nullptr)
-	{
-		_AnimInstance->Montage_Play(_FireAnimation, 1.f);
+		UGameplayStatics::PlaySoundAtLocation(this, _FireSound, GetActorLocation(), .2f);
 	}
 }
 
 void AVanguard::StartFire()
 {
+	if (!_IsAwakeEnded)
+		return;
+
+	_AnimInstance->PlayFireMontage(true);
+
+	_LeftMuzzleFlash->Activate(true);
+	_RightMuzzleFlash->Activate(true);
+
 	Fire();
 
 	GetWorldTimerManager().SetTimer(_TimerHandle_HandleRefire, this, &AVanguard::Fire, _TimeBetweenShots, true);
@@ -244,5 +254,10 @@ void AVanguard::StartFire()
 
 void AVanguard::StopFire()
 {
+	_AnimInstance->PlayFireMontage(false);
+
+	_LeftMuzzleFlash->Deactivate();
+	_RightMuzzleFlash->Deactivate();
+
 	GetWorldTimerManager().ClearTimer(_TimerHandle_HandleRefire);
 }

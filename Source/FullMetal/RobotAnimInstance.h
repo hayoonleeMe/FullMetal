@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -19,8 +19,12 @@ public:
 
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 	
-public:
 	void PlayAwakeMontage();
+	void PlayFireMontage(bool bIsPlay);
+
+private:
+	UFUNCTION()
+	void AnimNotify_Footstep();
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Robot, meta = (AllowPrivateAccess = true))
@@ -40,4 +44,13 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Robot, meta = (AllowPrivateAccess = true))
 	float _Vertical;
+
+	UPROPERTY(EditAnywhere, Category = Robot)
+	USoundBase* _FootstepSound;
+
+	UPROPERTY()
+	class AVanguard* _Character;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Robot, meta = (AllowPrivateAccess = true))
+	UAnimMontage* _FireMontage;
 };

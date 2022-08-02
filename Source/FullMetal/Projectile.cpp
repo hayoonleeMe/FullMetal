@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Projectile.h"
@@ -13,7 +13,7 @@ AProjectile::AProjectile()
     _CollisionComp->BodyInstance.SetCollisionProfileName("Projectile");
     _CollisionComp->OnComponentHit.AddDynamic(this, &AProjectile::OnHit);
 
-    // Projectile À§¿¡ ¿Ã¶ó¼­Áö ¸øÇÏµµ·Ï ¼³Á¤
+    // Projectile ìœ„ì— ì˜¬ë¼ì„œì§€ ëª»í•˜ë„ë¡ ì„¤ì •
     _CollisionComp->SetWalkableSlopeOverride(FWalkableSlopeOverride(WalkableSlope_Unwalkable, 0.f));
     _CollisionComp->CanCharacterStepUpOn = ECB_No;
 
