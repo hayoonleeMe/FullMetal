@@ -76,6 +76,9 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon, meta = (AllowPrivateAccess = true))
 	class UNiagaraComponent* _RightMuzzleFlash;
 
+	UPROPERTY(EditAnywhere, Category = Weapon)
+	class UNiagaraSystem* _ImpactEffect;
+
 	bool _IsAwakeEnded = false;
 
 public: 

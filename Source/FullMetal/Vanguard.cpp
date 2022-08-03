@@ -12,6 +12,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "NiagaraSystem.h"
 #include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
 
 // Sets default values
 AVanguard::AVanguard()
@@ -78,12 +79,12 @@ AVanguard::AVanguard()
 	_LeftMuzzleFlash->SetAutoActivate(false);
 	_RightMuzzleFlash->SetAutoActivate(false);
 
-	//// 소환할 Projectile Class 로드
-	//static ConstructorHelpers::FClassFinder<AProjectile> PJ(TEXT("Blueprint'/Game/Blueprints/BP_Projectile.BP_Projectile_C'"));
-	//if (PJ.Succeeded())
-	//{
-	//	_ProjectileClass = PJ.Class;
-	//}
+	// MuzzleEffect NiagaraSystem Asset 로드
+	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> IE(TEXT("NiagaraSystem'/Game/Effects/N_Impact_System.N_Impact_System'"));
+	if (IE.Succeeded())
+	{
+		_ImpactEffect = IE.Object;
+	}
 }
 
 // Called when the game starts or when spawned
@@ -213,11 +214,19 @@ void AVanguard::Fire()
 		{
 			UE_LOG(LogTemp, Warning, TEXT("HitActor : %s"), *HitActor->GetName());
 		}
+
+		// 총알이 부딪힌 곳에 이펙트 생성
+		if (_ImpactEffect != nullptr)
+		{
+			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), _ImpactEffect, Hit.ImpactPoint + Hit.ImpactNormal * 5.f, UKismetMathLibrary::MakeRotFromX(Hit.ImpactNormal));
+		}
 	}
 	else
 	{
 		ProjectileTarget = Hit.TraceEnd;
 	}
+
+	// 총알 동선을 따라가는 총알 생성
 
 	// 총구에서 발사체 목표 위치까지 바라보는 Rotation
 	FRotator LeftRotation = UKismetMathLibrary::FindLookAtRotation(LeftMuzzleLocation, ProjectileTarget);
@@ -237,6 +246,8 @@ void AVanguard::Fire()
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, _FireSound, GetActorLocation(), .2f);
 	}
+
+	
 }
 
 void AVanguard::StartFire()
