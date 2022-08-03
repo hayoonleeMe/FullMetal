@@ -212,12 +212,13 @@ void AVanguard::Fire()
 		AActor* HitActor = Hit.GetActor();
 		if (HitActor != nullptr)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("HitActor : %s"), *HitActor->GetName());
+			//UE_LOG(LogTemp, Warning, TEXT("HitActor : %s"), *HitActor->GetName());
 		}
 
 		// 총알이 부딪힌 곳에 이펙트 생성
 		if (_ImpactEffect != nullptr)
 		{
+			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), _ImpactEffect, Hit.ImpactPoint + Hit.ImpactNormal * 5.f, UKismetMathLibrary::MakeRotFromX(Hit.ImpactNormal));
 			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), _ImpactEffect, Hit.ImpactPoint + Hit.ImpactNormal * 5.f, UKismetMathLibrary::MakeRotFromX(Hit.ImpactNormal));
 		}
 	}
@@ -225,8 +226,6 @@ void AVanguard::Fire()
 	{
 		ProjectileTarget = Hit.TraceEnd;
 	}
-
-	// 총알 동선을 따라가는 총알 생성
 
 	// 총구에서 발사체 목표 위치까지 바라보는 Rotation
 	FRotator LeftRotation = UKismetMathLibrary::FindLookAtRotation(LeftMuzzleLocation, ProjectileTarget);
@@ -238,6 +237,7 @@ void AVanguard::Fire()
 	FActorSpawnParameters ActorSpawnParams;
 	ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
+	// 총알 동선을 따라가는 총알 생성
 	GetWorld()->SpawnActor<AActor>(_ProjectileClass, LeftTransform, ActorSpawnParams);
 	GetWorld()->SpawnActor<AActor>(_ProjectileClass, RightTransform, ActorSpawnParams);
 
@@ -246,8 +246,6 @@ void AVanguard::Fire()
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, _FireSound, GetActorLocation(), .2f);
 	}
-
-	
 }
 
 void AVanguard::StartFire()
