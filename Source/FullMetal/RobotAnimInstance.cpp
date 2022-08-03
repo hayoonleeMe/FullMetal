@@ -53,6 +53,7 @@ void URobotAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 
 		_Horizontal = _Character->_RightLeftValue;
 		_Vertical = _Character->_ForwardBackwardValue;
+		_UpDown = _Character->_UpDown;
 	}
 }
 

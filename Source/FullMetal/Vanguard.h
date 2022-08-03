@@ -81,8 +81,15 @@ private:
 
 	bool _IsAwakeEnded = false;
 
+	FName _LeftMuzzleSocket;
+	FName _RightMuzzleSocket;
+	FName _LeftWeaponBone;
+	FName _RightWeaponBone;
+
 public: 
 	float _ForwardBackwardValue = 0;
 
 	float _RightLeftValue = 0;
+
+	FRotator _UpDown;
 };

@@ -13,6 +13,7 @@
 #include "NiagaraSystem.h"
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
+#include "Components/PoseableMeshComponent.h"
 
 // Sets default values
 AVanguard::AVanguard()
@@ -85,6 +86,11 @@ AVanguard::AVanguard()
 	{
 		_ImpactEffect = IE.Object;
 	}
+
+	_LeftMuzzleSocket = TEXT("muzzle_L");
+	_RightMuzzleSocket = TEXT("muzzle_R");
+	_LeftWeaponBone = TEXT("gun_02_L");
+	_RightWeaponBone = TEXT("gun_02_R");
 }
 
 // Called when the game starts or when spawned
@@ -117,7 +123,7 @@ void AVanguard::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAxis(TEXT("RightLeft"), this, &AVanguard::RightLeft);
 
 	PlayerInputComponent->BindAxis(TEXT("TurnRightLeft"), this, &AVanguard::TurnRightLeft);
-	PlayerInputComponent->BindAxis(TEXT("LookUpDown"), this, &APawn::AddControllerPitchInput);
+	PlayerInputComponent->BindAxis(TEXT("LookUpDown"), this, &AVanguard::LookUpDown);
 }
 
 void AVanguard::PostInitializeComponents()
@@ -157,14 +163,27 @@ void AVanguard::TurnRightLeft(float Value)
 	if (!_IsAwakeEnded)
 		return;
 
-	AddControllerYawInput(Value);
+	if ((Controller != nullptr) && (Value != 0.0f))
+	{
+		AddControllerYawInput(Value);
+	}
 }
 
 void AVanguard::LookUpDown(float Value)
 {
-	float Angle = Value * 180;
+	if ((Controller != nullptr) && (Value != 0.0f))
+	{
+		AddControllerPitchInput(Value);
 
-	AddControllerPitchInput(Value);
+		if (_IsAwakeEnded)
+		{
+			_UpDown = FRotator(0, GetController()->GetControlRotation().Pitch * -1, 0);
+		}
+
+	}
+	UE_LOG(LogTemp, Warning, TEXT("%s"), *GetController()->GetControlRotation().ToString());
+
+	
 }
 
 void AVanguard::OnAwakeMontageEnded(UAnimMontage* Montage, bool bInterrupted)
@@ -192,14 +211,16 @@ bool AVanguard::GunTrace(FHitResult& Hit)
 
 void AVanguard::Fire()
 {
-	FName LeftMuzzleSocket(TEXT("muzzle_L"));
-	FName RightMuzzleSocket(TEXT("muzzle_R"));
+	// 총구 소켓의 World Location
+	FVector LeftMuzzleLocation = GetMesh()->GetSocketLocation(_LeftMuzzleSocket);
+	FVector RightMuzzleLocation = GetMesh()->GetSocketLocation(_RightMuzzleSocket);
 
-	FVector LeftMuzzleLocation = GetMesh()->GetSocketLocation(LeftMuzzleSocket);
-	FVector RightMuzzleLocation = GetMesh()->GetSocketLocation(RightMuzzleSocket);
+	// 총 Bone의 World Rotation
+	FRotator LeftMuzzleRotation = GetMesh()->GetSocketRotation(_LeftWeaponBone);
+	FRotator RightMuzzleRotation = GetMesh()->GetSocketRotation(_RightWeaponBone);
 
-	_LeftMuzzleFlash->SetWorldLocation(LeftMuzzleLocation);
-	_RightMuzzleFlash->SetWorldLocation(RightMuzzleLocation);
+	_LeftMuzzleFlash->SetWorldLocationAndRotation(LeftMuzzleLocation, LeftMuzzleRotation);
+	_RightMuzzleFlash->SetWorldLocationAndRotation(RightMuzzleLocation, RightMuzzleRotation);
 
 	FHitResult Hit;
 	FVector ProjectileTarget;

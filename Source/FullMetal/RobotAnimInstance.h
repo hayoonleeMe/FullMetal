@@ -45,6 +45,9 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Robot, meta = (AllowPrivateAccess = true))
 	float _Vertical;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Robot, meta = (AllowPrivateAccess = true))
+	FRotator _UpDown;
+
 	UPROPERTY(EditAnywhere, Category = Robot)
 	USoundBase* _FootstepSound;
 
