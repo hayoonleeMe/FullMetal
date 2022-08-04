@@ -180,6 +180,9 @@ void AVanguard::TurnRightLeft(float Value)
 
 void AVanguard::LookUpDown(float Value)
 {
+	if (!_IsAwakeEnded)
+		return;
+
 	if ((Controller != nullptr) && (Value != 0.0f))
 	{
 		AddControllerPitchInput(Value);
