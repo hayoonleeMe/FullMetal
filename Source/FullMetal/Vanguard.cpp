@@ -84,8 +84,6 @@ AVanguard::AVanguard()
 	{
 		_ImpactEffect = IE.Object;
 	}
-
-	
 }
 
 // Called when the game starts or when spawned
@@ -196,7 +194,7 @@ void AVanguard::LookUpDown(float Value)
 
 void AVanguard::OnAwakeMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
-	if (Montage->GetName() == TEXT("BattleRobot_Skeleton_Montage"))
+	if (Montage->GetName() == TEXT("Awake_Montage"))
 	{
 		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 		_IsAwakeEnded = true;

@@ -6,7 +6,7 @@
 URobotAnimInstance::URobotAnimInstance()
 {
 	// _AwakeMontage를 로드해 설정한다.
-	static ConstructorHelpers::FObjectFinder<UAnimMontage> AM(TEXT("AnimMontage'/Game/Animations/BattleRobot_Skeleton_Montage.BattleRobot_Skeleton_Montage'"));
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> AM(TEXT("AnimMontage'/Game/Animations/Awake_Montage.Awake_Montage'"));
 	if (AM.Succeeded())
 	{
 		_AwakeMontage = AM.Object;
