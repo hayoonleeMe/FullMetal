@@ -80,11 +80,11 @@ private:
 	class UNiagaraSystem* _ImpactEffect;
 
 	bool _IsAwakeEnded = false;
+	
+	bool _IsShooting = false;
 
 	FName _LeftMuzzleSocket;
 	FName _RightMuzzleSocket;
-	FName _LeftWeaponBone;
-	FName _RightWeaponBone;
 
 public: 
 	float _ForwardBackwardValue = 0;

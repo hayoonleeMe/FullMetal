@@ -67,6 +67,7 @@ void URobotAnimInstance::PlayAwakeMontage()
 
 void URobotAnimInstance::PlayFireMontage(bool bIsPlay)
 {
+	// _FireMontage를 재생한다.
 	if (bIsPlay)
 	{
 		if (!Montage_IsPlaying(_FireMontage))
@@ -74,6 +75,7 @@ void URobotAnimInstance::PlayFireMontage(bool bIsPlay)
 			Montage_Play(_FireMontage, 1.f);
 		}
 	}
+	// _FireMontage를 끈다.
 	else
 	{
 		if (Montage_IsPlaying(_FireMontage))

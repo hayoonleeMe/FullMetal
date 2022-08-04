@@ -19,6 +19,7 @@ void AMyGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// HUD 위젯을 화면에 표시한다.
 	if (_HUD != nullptr)
 	{
 		_HUD->AddToViewport();

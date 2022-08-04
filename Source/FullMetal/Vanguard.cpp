@@ -70,13 +70,11 @@ AVanguard::AVanguard()
 	// NiagaraComponent 로드
 	_LeftMuzzleFlash = CreateDefaultSubobject<UNiagaraComponent>(TEXT("LeftMuzzleFlash"));
 	_RightMuzzleFlash = CreateDefaultSubobject<UNiagaraComponent>(TEXT("RightMuzzleFlash"));
+
 	_LeftMuzzleFlash->SetupAttachment(GetMesh());
 	_RightMuzzleFlash->SetupAttachment(GetMesh());
 	_LeftMuzzleFlash->SetAsset(_MuzzleEffect);
 	_RightMuzzleFlash->SetAsset(_MuzzleEffect);
-
-	// TODO : 점프 시 MuzzleEffect가 따라오지 않는 현상 개선 필요
-
 	_LeftMuzzleFlash->SetAutoActivate(false);
 	_RightMuzzleFlash->SetAutoActivate(false);
 
@@ -87,10 +85,7 @@ AVanguard::AVanguard()
 		_ImpactEffect = IE.Object;
 	}
 
-	_LeftMuzzleSocket = TEXT("muzzle_L");
-	_RightMuzzleSocket = TEXT("muzzle_R");
-	_LeftWeaponBone = TEXT("gun_02_L");
-	_RightWeaponBone = TEXT("gun_02_R");
+	
 }
 
 // Called when the game starts or when spawned
@@ -106,6 +101,14 @@ void AVanguard::BeginPlay()
 void AVanguard::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	
+	// 총 발사할 때 Muzzle Effect의 위치를 총구로 조정
+	// Fire()에서 수행할 경우 발사속도에 따라 실제로 게임에서 위치 조정이 적용되는 속도가 달라지므로 Tick에서 수행
+	if (_IsShooting)
+	{
+		_LeftMuzzleFlash->SetWorldLocation(GetMesh()->GetSocketLocation(_LeftMuzzleSocket));
+		_RightMuzzleFlash->SetWorldLocation(GetMesh()->GetSocketLocation(_RightMuzzleSocket));
+	}
 }
 
 // Called to bind functionality to input
@@ -113,15 +116,19 @@ void AVanguard::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+	// 점프
 	PlayerInputComponent->BindAction(TEXT("Jump"), IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction(TEXT("Jump"), IE_Released, this, &ACharacter::StopJumping);
 
+	// 총 발사
 	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Pressed, this, &AVanguard::StartFire);
 	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Released, this, &AVanguard::StopFire);
 
+	// 앞, 뒤, 좌, 우 이동
 	PlayerInputComponent->BindAxis(TEXT("ForwardBackward"), this,  &AVanguard::ForwardBackward);
 	PlayerInputComponent->BindAxis(TEXT("RightLeft"), this, &AVanguard::RightLeft);
 
+	// 상, 하, 좌, 우 시점 이동
 	PlayerInputComponent->BindAxis(TEXT("TurnRightLeft"), this, &AVanguard::TurnRightLeft);
 	PlayerInputComponent->BindAxis(TEXT("LookUpDown"), this, &AVanguard::LookUpDown);
 }
@@ -130,8 +137,12 @@ void AVanguard::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	_AnimInstance = Cast<URobotAnimInstance>(GetMesh()->GetAnimInstance());
+	// 소켓 FName 캐싱
+	_LeftMuzzleSocket = TEXT("muzzle_L");
+	_RightMuzzleSocket = TEXT("muzzle_R");
 
+	// 애니메이션 클래스 캐싱
+	_AnimInstance = Cast<URobotAnimInstance>(GetMesh()->GetAnimInstance());
 	if (_AnimInstance)
 	{
 		_AnimInstance->OnMontageEnded.AddDynamic(this, &AVanguard::OnAwakeMontageEnded);
@@ -175,15 +186,12 @@ void AVanguard::LookUpDown(float Value)
 	{
 		AddControllerPitchInput(Value);
 
+		// 상, 하 시점에 따라 무기 Bone의 회전을 조정하기 위한 변수 업데이트
 		if (_IsAwakeEnded)
 		{
 			_UpDown = FRotator(0, GetController()->GetControlRotation().Pitch * -1, 0);
 		}
-
 	}
-	UE_LOG(LogTemp, Warning, TEXT("%s"), *GetController()->GetControlRotation().ToString());
-
-	
 }
 
 void AVanguard::OnAwakeMontageEnded(UAnimMontage* Montage, bool bInterrupted)
@@ -211,32 +219,27 @@ bool AVanguard::GunTrace(FHitResult& Hit)
 
 void AVanguard::Fire()
 {
-	// 총구 소켓의 World Location
-	FVector LeftMuzzleLocation = GetMesh()->GetSocketLocation(_LeftMuzzleSocket);
-	FVector RightMuzzleLocation = GetMesh()->GetSocketLocation(_RightMuzzleSocket);
-
-	// 총 Bone의 World Rotation
-	FRotator LeftMuzzleRotation = GetMesh()->GetSocketRotation(_LeftWeaponBone);
-	FRotator RightMuzzleRotation = GetMesh()->GetSocketRotation(_RightWeaponBone);
-
-	_LeftMuzzleFlash->SetWorldLocationAndRotation(LeftMuzzleLocation, LeftMuzzleRotation);
-	_RightMuzzleFlash->SetWorldLocationAndRotation(RightMuzzleLocation, RightMuzzleRotation);
-
+	// UNiagaraComponent의 회전 조정
+	_LeftMuzzleFlash->SetRelativeRotation(FRotator(0, 0, GetController()->GetControlRotation().Pitch * -1));
+	_RightMuzzleFlash->SetRelativeRotation(FRotator(0, 0, GetController()->GetControlRotation().Pitch * -1));
+	
 	FHitResult Hit;
-	FVector ProjectileTarget;
+	FVector ProjectileTargetLocation;
 
 	bool bResult = GunTrace(Hit);
 	if (bResult)
 	{
-		ProjectileTarget = Hit.ImpactPoint;
+		// 총알 발사체의 도착위치를 라인트레이스의 충돌지점으로 설정
+		ProjectileTargetLocation = Hit.ImpactPoint;
 
+		// TODO : 총알을 맞았을 때의 상호작용
 		AActor* HitActor = Hit.GetActor();
 		if (HitActor != nullptr)
 		{
-			//UE_LOG(LogTemp, Warning, TEXT("HitActor : %s"), *HitActor->GetName());
+			UE_LOG(LogTemp, Warning, TEXT("HitActor : %s"), *HitActor->GetName());
 		}
 
-		// 총알이 부딪힌 곳에 이펙트 생성
+		// 총알이 부딪힌 곳에 Impact Effect 생성
 		if (_ImpactEffect != nullptr)
 		{
 			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), _ImpactEffect, Hit.ImpactPoint + Hit.ImpactNormal * 5.f, UKismetMathLibrary::MakeRotFromX(Hit.ImpactNormal));
@@ -245,12 +248,17 @@ void AVanguard::Fire()
 	}
 	else
 	{
-		ProjectileTarget = Hit.TraceEnd;
+		// 총알 발사체의 도착위치를 라인트레이스의 가장 끝부분으로 설정
+		ProjectileTargetLocation = Hit.TraceEnd;
 	}
 
+	// 총구 소켓의 World Location
+	FVector LeftMuzzleLocation = GetMesh()->GetSocketLocation(_LeftMuzzleSocket);
+	FVector RightMuzzleLocation = GetMesh()->GetSocketLocation(_RightMuzzleSocket);
+
 	// 총구에서 발사체 목표 위치까지 바라보는 Rotation
-	FRotator LeftRotation = UKismetMathLibrary::FindLookAtRotation(LeftMuzzleLocation, ProjectileTarget);
-	FRotator RightRotation = UKismetMathLibrary::FindLookAtRotation(RightMuzzleLocation, ProjectileTarget);
+	FRotator LeftRotation = UKismetMathLibrary::FindLookAtRotation(LeftMuzzleLocation, ProjectileTargetLocation);
+	FRotator RightRotation = UKismetMathLibrary::FindLookAtRotation(RightMuzzleLocation, ProjectileTargetLocation);
 
 	FTransform LeftTransform = UKismetMathLibrary::MakeTransform(LeftMuzzleLocation, LeftRotation);
 	FTransform RightTransform = UKismetMathLibrary::MakeTransform(RightMuzzleLocation, RightRotation);
@@ -274,6 +282,8 @@ void AVanguard::StartFire()
 	if (!_IsAwakeEnded)
 		return;
 
+	_IsShooting = true;
+
 	_AnimInstance->PlayFireMontage(true);
 
 	_LeftMuzzleFlash->Activate(true);
@@ -286,6 +296,11 @@ void AVanguard::StartFire()
 
 void AVanguard::StopFire()
 {
+	if (!_IsAwakeEnded)
+		return;
+
+	_IsShooting = false;
+
 	_AnimInstance->PlayFireMontage(false);
 
 	_LeftMuzzleFlash->Deactivate();
