@@ -13,7 +13,8 @@
 #include "NiagaraSystem.h"
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
-#include "Components/PoseableMeshComponent.h"
+#include "MyStatComponent.h"
+#include "MyGameInstance.h"
 
 // Sets default values
 AVanguard::AVanguard()
@@ -29,11 +30,6 @@ AVanguard::AVanguard()
 	bUseControllerRotationYaw = true;
 	bUseControllerRotationRoll = false;
 
-	GetCharacterMovement()->JumpZVelocity = 500.f; // 점프 시 시작속도.
-	GetCharacterMovement()->AirControl = 0.25f;	// 공중에서 움직일 수 있는 정도, 1이면 지면과 동일하게 이동.
-	GetCharacterMovement()->MaxWalkSpeed = 1000.f; // 지면에서 이동 시 최대 속도, 공중에서 움직일 때에도 영향을 끼친다.
-	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f; // 속도를 직접적으로 낮추는 일정한 반대되는 힘이다.
-
 	// 스켈레탈 메시 설정
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> SM(TEXT("SkeletalMesh'/Game/BattleRobot/Mesh/SK_BattleRobot.SK_BattleRobot'"));
 	if (SM.Succeeded())
@@ -41,7 +37,7 @@ AVanguard::AVanguard()
 		GetMesh()->SetSkeletalMesh(SM.Object);
 	}
 
-	// 스프링암, 카메라 컴포넌트를 부착하고 기본 값을 설정한다.
+	// 스프링암, 카메라 컴포넌트를 부착하고 초기화한다.
 	_SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SPRINGARM"));
 	_Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("CAMERA"));
 
@@ -60,7 +56,7 @@ AVanguard::AVanguard()
 
 	GetMesh()->SetRelativeLocationAndRotation(FVector(0.f, 0.f, -88.f), FRotator(0.f, -90.f, 0.f));
 
-	// MuzzleEffect NiagaraSystem Asset 로드
+	// Muzzle Effect NiagaraSystem Asset 로드
 	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> ME(TEXT("NiagaraSystem'/Game/Effects/N_MuzzleFlash.N_MuzzleFlash'"));
 	if (ME.Succeeded())
 	{
@@ -78,12 +74,15 @@ AVanguard::AVanguard()
 	_LeftMuzzleFlash->SetAutoActivate(false);
 	_RightMuzzleFlash->SetAutoActivate(false);
 
-	// MuzzleEffect NiagaraSystem Asset 로드
+	// Impact Effect NiagaraSystem Asset 로드
 	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> IE(TEXT("NiagaraSystem'/Game/Effects/N_Impact_System.N_Impact_System'"));
 	if (IE.Succeeded())
 	{
 		_ImpactEffect = IE.Object;
 	}
+
+	// Stat Component 로드
+	_Stat = CreateDefaultSubobject<UMyStatComponent>(TEXT("STAT"));
 }
 
 // Called when the game starts or when spawned
@@ -134,6 +133,23 @@ void AVanguard::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 void AVanguard::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
+
+	// 점프 시 시작속도.
+	GetCharacterMovement()->JumpZVelocity = 500.f; 
+	// 공중에서 움직일 수 있는 정도, 1이면 지면과 동일하게 이동.
+	GetCharacterMovement()->AirControl = 0.25f;	
+	// 지면에서 이동 시 최대 속도, 공중에서 움직일 때에도 영향을 끼친다.
+	GetCharacterMovement()->MaxWalkSpeed = _Stat->GetSpeed(); 
+	// 속도를 직접적으로 낮추는 일정한 반대되는 힘이다.
+	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f; 
+
+	// 발사 딜레이 설정
+	auto MyGameInstance = Cast<UMyGameInstance>((UGameplayStatics::GetGameInstance(GetWorld())));
+	if (MyGameInstance)
+	{
+		float MaxTimeBetweenFire = MyGameInstance->GetMaxTimeBetweenFire();
+		_TimeBetweenShots = MaxTimeBetweenFire + MaxTimeBetweenFire * (1 - _Stat->GetRpmPercent() / 100);
+	}
 
 	// 소켓 FName 캐싱
 	_LeftMuzzleSocket = TEXT("muzzle_L");
@@ -204,6 +220,13 @@ void AVanguard::OnAwakeMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 	}
 }
 
+float AVanguard::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	_Stat->OnAttacked(DamageAmount);
+
+	return DamageAmount;
+}
+
 bool AVanguard::GunTrace(FHitResult& Hit)
 {
 	FVector Location;
@@ -238,6 +261,14 @@ void AVanguard::Fire()
 		if (HitActor != nullptr)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("HitActor : %s"), *HitActor->GetName());
+
+			// 총알을 맞은 오브젝트가 데미지를 받을 수 있는 Pawn이면 데미지를 입힌다.
+			auto HitPawn = Cast<APawn>(HitActor);
+			if (HitPawn)
+			{
+				FDamageEvent DamageEvent;
+				HitActor->TakeDamage(_Stat->GetPrimaryDamage(), DamageEvent, GetController(), this);
+			}
 		}
 
 		// 총알이 부딪힌 곳에 Impact Effect 생성

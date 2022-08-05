@@ -31,6 +31,8 @@ public:
 	UFUNCTION()
 	void OnAwakeMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
+	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+
 private:
 	void ForwardBackward(float Value);
 	void RightLeft(float Value);
@@ -60,10 +62,7 @@ private:
 	USoundBase* _FireSound;
 
 	UPROPERTY(EditAnywhere, Category = Weapon)
-	UAnimMontage* _FireAnimation;
-
-	UPROPERTY(EditAnywhere, Category = Weapon)
-	float _TimeBetweenShots = 0.15f;
+	float _TimeBetweenShots;
 
 	FTimerHandle _TimerHandle_HandleRefire;
 
@@ -85,6 +84,9 @@ private:
 
 	FName _LeftMuzzleSocket;
 	FName _RightMuzzleSocket;
+
+	UPROPERTY(VisibleAnywhere, Category = Stat)
+	class UMyStatComponent* _Stat;
 
 public: 
 	float _ForwardBackwardValue = 0;

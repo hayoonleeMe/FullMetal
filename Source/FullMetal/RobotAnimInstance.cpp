@@ -59,10 +59,7 @@ void URobotAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 
 void URobotAnimInstance::PlayAwakeMontage()
 {
-	if (!Montage_IsPlaying(_AwakeMontage))
-	{
-		Montage_Play(_AwakeMontage, 1.f);
-	}
+	Montage_Play(_AwakeMontage, 1.f);
 }
 
 void URobotAnimInstance::PlayFireMontage(bool bIsPlay)
@@ -70,18 +67,12 @@ void URobotAnimInstance::PlayFireMontage(bool bIsPlay)
 	// _FireMontage를 재생한다.
 	if (bIsPlay)
 	{
-		if (!Montage_IsPlaying(_FireMontage))
-		{
-			Montage_Play(_FireMontage, 1.f);
-		}
+		Montage_Play(_FireMontage, 1.f);
 	}
 	// _FireMontage를 끈다.
 	else
 	{
-		if (Montage_IsPlaying(_FireMontage))
-		{
-			Montage_Stop(1.f, _FireMontage);
-		}
+		Montage_Stop(1.f, _FireMontage);
 	}
 	
 }
