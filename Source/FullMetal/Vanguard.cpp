@@ -38,8 +38,8 @@ AVanguard::AVanguard()
 	}
 
 	// 스프링암, 카메라 컴포넌트를 부착하고 초기화한다.
-	_SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SPRINGARM"));
-	_Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("CAMERA"));
+	_SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
+	_Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 
 	_SpringArm->SetupAttachment(GetCapsuleComponent());
 	_SpringArm->TargetArmLength = 1000.f;
@@ -82,7 +82,7 @@ AVanguard::AVanguard()
 	}
 
 	// Stat Component 로드
-	_Stat = CreateDefaultSubobject<UMyStatComponent>(TEXT("STAT"));
+	_Stat = CreateDefaultSubobject<UMyStatComponent>(TEXT("Stat"));
 }
 
 // Called when the game starts or when spawned
