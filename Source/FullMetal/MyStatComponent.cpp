@@ -32,7 +32,7 @@ void UMyStatComponent::InitializeComponent()
 void UMyStatComponent::SetClass(int32 NewClass)
 {
 	auto MyGameInstance = Cast<UMyGameInstance>((UGameplayStatics::GetGameInstance(GetWorld())));
-	if (MyGameInstance)
+	if (IsValid(MyGameInstance))
 	{
 		auto StatData = MyGameInstance->GetStatData(NewClass);
 		if (StatData)

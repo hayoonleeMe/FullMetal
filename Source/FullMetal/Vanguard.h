@@ -1,6 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
-
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
@@ -42,7 +40,6 @@ private:
 	void StartFire();
 	void StopFire();
 	void Fire();
-
 	bool GunTrace(FHitResult& Hit);
 
 private:
@@ -53,7 +50,7 @@ private:
 	class UCameraComponent* _Camera;
 
 	UPROPERTY()
-	class URobotAnimInstance* _AnimInstance;
+		class URobotAnimInstance* _AnimInstance;
 
 	UPROPERTY(EditAnywhere, Category = Weapon)
 	TSubclassOf<AActor> _ProjectileClass;

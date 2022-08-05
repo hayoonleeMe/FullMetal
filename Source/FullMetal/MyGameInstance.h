@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -45,11 +43,11 @@ public:
 
 	FClassData* GetStatData(int32 Class);
 
-	float GetMaxTimeBetweenFire() { return _MaxTimeBetweenFire; }
+	float GetMaxTimeBetweenShots() { return _MaxTimeBetweenShots; }
 
 private:
 	UPROPERTY()
 	class UDataTable* MyStats;
 
-	float _MaxTimeBetweenFire = 0.09f;
+	float _MaxTimeBetweenShots = 0.09f;
 };

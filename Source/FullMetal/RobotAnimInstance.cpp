@@ -32,17 +32,17 @@ void URobotAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	Super::NativeUpdateAnimation(DeltaSeconds);
 
 	// 캐릭터 캐싱.
-	if (_Character == nullptr)
+	if (!_Character)
 	{
 		auto Pawn = TryGetPawnOwner();
-		if (IsValid(Pawn))
+		if (Pawn)
 		{
 			_Character = Cast<AVanguard>(Pawn);
 		}
 	}
 
 	// 애니메이션 재생에 필요한 데이터를 수집한다.
-	if (_Character != nullptr)
+	if (_Character)
 	{
 		_Velocity = _Character->GetVelocity();
 
@@ -74,12 +74,11 @@ void URobotAnimInstance::PlayFireMontage(bool bIsPlay)
 	{
 		Montage_Stop(1.f, _FireMontage);
 	}
-	
 }
 
 void URobotAnimInstance::AnimNotify_Footstep()
 {
-	if (_FootstepSound != nullptr)
+	if (IsValid(_FootstepSound) && _Character)
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, _FootstepSound, _Character->GetActorLocation(), .5f);
 	}

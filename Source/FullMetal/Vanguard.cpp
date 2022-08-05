@@ -1,7 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
-
-
-#include "Vanguard.h"
+﻿#include "Vanguard.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -145,10 +142,10 @@ void AVanguard::PostInitializeComponents()
 
 	// 발사 딜레이 설정
 	auto MyGameInstance = Cast<UMyGameInstance>((UGameplayStatics::GetGameInstance(GetWorld())));
-	if (MyGameInstance)
+	if (IsValid(MyGameInstance))
 	{
-		float MaxTimeBetweenFire = MyGameInstance->GetMaxTimeBetweenFire();
-		_TimeBetweenShots = MaxTimeBetweenFire + MaxTimeBetweenFire * (1 - _Stat->GetRpmPercent() / 100);
+		float MaxTimeBetweenShots = MyGameInstance->GetMaxTimeBetweenShots();
+		_TimeBetweenShots = MaxTimeBetweenShots + MaxTimeBetweenShots * (1 - _Stat->GetRpmPercent() / 100);
 	}
 
 	// 소켓 FName 캐싱
@@ -157,7 +154,7 @@ void AVanguard::PostInitializeComponents()
 
 	// 애니메이션 클래스 캐싱
 	_AnimInstance = Cast<URobotAnimInstance>(GetMesh()->GetAnimInstance());
-	if (_AnimInstance)
+	if (IsValid(_AnimInstance))
 	{
 		_AnimInstance->OnMontageEnded.AddDynamic(this, &AVanguard::OnAwakeMontageEnded);
 	}
@@ -167,7 +164,7 @@ void AVanguard::ForwardBackward(float Value)
 {
 	_ForwardBackwardValue = Value;
 
-	if ((Controller != nullptr) && (Value != 0.0f))
+	if ((Controller) && (Value != 0.0f))
 	{
 		AddMovementInput(GetActorForwardVector(), Value);
 	}
@@ -177,7 +174,7 @@ void AVanguard::RightLeft(float Value)
 {
 	_RightLeftValue = Value;
 
-	if ((Controller != nullptr) && (Value != 0.0f))
+	if ((Controller) && (Value != 0.0f))
 	{
 		AddMovementInput(GetActorRightVector(), Value);
 	}
@@ -188,7 +185,7 @@ void AVanguard::TurnRightLeft(float Value)
 	if (!_IsAwakeEnded)
 		return;
 
-	if ((Controller != nullptr) && (Value != 0.0f))
+	if ((Controller) && (Value != 0.0f))
 	{
 		AddControllerYawInput(Value);
 	}
@@ -199,7 +196,7 @@ void AVanguard::LookUpDown(float Value)
 	if (!_IsAwakeEnded)
 		return;
 
-	if ((Controller != nullptr) && (Value != 0.0f))
+	if ((Controller) && (Value != 0.0f))
 	{
 		AddControllerPitchInput(Value);
 
@@ -258,7 +255,7 @@ void AVanguard::Fire()
 
 		// TODO : 총알을 맞았을 때의 상호작용
 		AActor* HitActor = Hit.GetActor();
-		if (HitActor != nullptr)
+		if (HitActor)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("HitActor : %s"), *HitActor->GetName());
 
@@ -272,7 +269,7 @@ void AVanguard::Fire()
 		}
 
 		// 총알이 부딪힌 곳에 Impact Effect 생성
-		if (_ImpactEffect != nullptr)
+		if (IsValid(_ImpactEffect))
 		{
 			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), _ImpactEffect, Hit.ImpactPoint + Hit.ImpactNormal * 5.f, UKismetMathLibrary::MakeRotFromX(Hit.ImpactNormal));
 			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), _ImpactEffect, Hit.ImpactPoint + Hit.ImpactNormal * 5.f, UKismetMathLibrary::MakeRotFromX(Hit.ImpactNormal));
@@ -303,7 +300,7 @@ void AVanguard::Fire()
 	GetWorld()->SpawnActor<AActor>(_ProjectileClass, RightTransform, ActorSpawnParams);
 
 	// 발사 소리 재생
-	if (_FireSound != nullptr)
+	if (IsValid(_FireSound))
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, _FireSound, GetActorLocation(), .2f);
 	}
