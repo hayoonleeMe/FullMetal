@@ -50,7 +50,7 @@ private:
 	class UCameraComponent* _Camera;
 
 	UPROPERTY()
-		class URobotAnimInstance* _AnimInstance;
+	class URobotAnimInstance* _AnimInstance;
 
 	UPROPERTY(EditAnywhere, Category = Weapon)
 	TSubclassOf<AActor> _ProjectileClass;
@@ -75,9 +75,9 @@ private:
 	UPROPERTY(EditAnywhere, Category = Weapon)
 	class UNiagaraSystem* _ImpactEffect;
 
-	bool _IsAwakeEnded = false;
+	bool _bIsAwakeEnded = false;
 	
-	bool _IsShooting = false;
+	bool _bIsShooting = false;
 
 	FName _LeftMuzzleSocket;
 	FName _RightMuzzleSocket;

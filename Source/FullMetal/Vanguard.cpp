@@ -98,7 +98,7 @@ void AVanguard::Tick(float DeltaTime)
 	
 	// 총 발사할 때 Muzzle Effect의 위치를 총구로 조정
 	// Fire()에서 수행할 경우 발사속도에 따라 실제로 게임에서 위치 조정이 적용되는 속도가 달라지므로 Tick에서 수행
-	if (_IsShooting)
+	if (_bIsShooting)
 	{
 		_LeftMuzzleFlash->SetWorldLocation(GetMesh()->GetSocketLocation(_LeftMuzzleSocket));
 		_RightMuzzleFlash->SetWorldLocation(GetMesh()->GetSocketLocation(_RightMuzzleSocket));
@@ -182,7 +182,7 @@ void AVanguard::RightLeft(float Value)
 
 void AVanguard::TurnRightLeft(float Value)
 {
-	if (!_IsAwakeEnded)
+	if (!_bIsAwakeEnded)
 		return;
 
 	if ((Controller) && (Value != 0.0f))
@@ -193,7 +193,7 @@ void AVanguard::TurnRightLeft(float Value)
 
 void AVanguard::LookUpDown(float Value)
 {
-	if (!_IsAwakeEnded)
+	if (!_bIsAwakeEnded)
 		return;
 
 	if ((Controller) && (Value != 0.0f))
@@ -201,7 +201,7 @@ void AVanguard::LookUpDown(float Value)
 		AddControllerPitchInput(Value);
 
 		// 상, 하 시점에 따라 무기 Bone의 회전을 조정하기 위한 변수 업데이트
-		if (_IsAwakeEnded)
+		if (_bIsAwakeEnded)
 		{
 			_UpDown = FRotator(0, GetController()->GetControlRotation().Pitch * -1, 0);
 		}
@@ -213,7 +213,7 @@ void AVanguard::OnAwakeMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 	if (Montage->GetName() == TEXT("Awake_Montage"))
 	{
 		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
-		_IsAwakeEnded = true;
+		_bIsAwakeEnded = true;
 	}
 }
 
@@ -308,10 +308,10 @@ void AVanguard::Fire()
 
 void AVanguard::StartFire()
 {
-	if (!_IsAwakeEnded)
+	if (!_bIsAwakeEnded)
 		return;
 
-	_IsShooting = true;
+	_bIsShooting = true;
 
 	_AnimInstance->PlayFireMontage(true);
 
@@ -325,10 +325,10 @@ void AVanguard::StartFire()
 
 void AVanguard::StopFire()
 {
-	if (!_IsAwakeEnded)
+	if (!_bIsAwakeEnded)
 		return;
 
-	_IsShooting = false;
+	_bIsShooting = false;
 
 	_AnimInstance->PlayFireMontage(false);
 
