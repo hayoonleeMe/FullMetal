@@ -10,7 +10,6 @@ void UHUDWidget::BindHp(UMyStatComponent* StatComp)
 {
 	CurrentStatComp = StatComp;
 	StatComp->_OnHpChanged.AddUObject(this, &UHUDWidget::UpdateHp);
-
 }
 
 void UHUDWidget::UpdateHp()

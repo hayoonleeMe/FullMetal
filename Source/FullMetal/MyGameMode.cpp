@@ -19,19 +19,9 @@ void AMyGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// HUD 위젯을 화면에 표시한다.
-	if (IsValid(_HUD))
-	{
-		_HUD->AddToViewport();
-	}
-}
-
-void AMyGameMode::PostInitializeComponents()
-{
-	Super::PostInitializeComponents();
-
 	// HUD 위젯을 캐릭터의 스탯과 연동한다.
-	auto Character = Cast<AVanguard>(UGameplayStatics::GetPlayerPawn(this, 0));
+	// 게임이 시작되어야 PlayerPawn이 Spawn되므로 UGameplayStatics::GetPlayerPawn은 최소 BeginPlay에서 호출해야함
+	auto Character = Cast<AVanguard>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
 	if (Character)
 	{
 		auto StatComp = Character->GetStatComp();
@@ -43,5 +33,11 @@ void AMyGameMode::PostInitializeComponents()
 				HUDWidget->BindHp(StatComp);
 			}
 		}
+	}
+
+	// HUD 위젯을 화면에 표시한다.
+	if (IsValid(_HUD))
+	{
+		_HUD->AddToViewport();
 	}
 }
