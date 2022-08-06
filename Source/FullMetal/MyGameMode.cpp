@@ -1,5 +1,8 @@
 ﻿#include "MyGameMode.h"
 #include "Blueprint/UserWidget.h"
+#include "Vanguard.h"
+#include "HUDWidget.h"
+#include "Kismet/GameplayStatics.h"
 
 AMyGameMode::AMyGameMode()
 {
@@ -20,5 +23,25 @@ void AMyGameMode::BeginPlay()
 	if (IsValid(_HUD))
 	{
 		_HUD->AddToViewport();
+	}
+}
+
+void AMyGameMode::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	// HUD 위젯을 캐릭터의 스탯과 연동한다.
+	auto Character = Cast<AVanguard>(UGameplayStatics::GetPlayerPawn(this, 0));
+	if (Character)
+	{
+		auto StatComp = Character->GetStatComp();
+		if (StatComp)
+		{
+			auto HUDWidget = Cast<UHUDWidget>(_HUD);
+			if (HUDWidget)
+			{
+				HUDWidget->BindHp(StatComp);
+			}
+		}
 	}
 }

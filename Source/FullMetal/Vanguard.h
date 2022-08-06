@@ -31,6 +31,8 @@ public:
 
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
+	class UMyStatComponent* GetStatComp() { return _Stat; }
+
 private:
 	void ForwardBackward(float Value);
 	void RightLeft(float Value);

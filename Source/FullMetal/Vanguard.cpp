@@ -12,6 +12,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "MyStatComponent.h"
 #include "MyGameInstance.h"
+#include "HUDWidget.h"
 
 // Sets default values
 AVanguard::AVanguard()

@@ -14,7 +14,6 @@ UMyStatComponent::UMyStatComponent()
 	_Class = 1;	// Vanguard
 }	
 
-
 // Called when the game starts
 void UMyStatComponent::BeginPlay()
 {
@@ -39,7 +38,7 @@ void UMyStatComponent::SetClass(int32 NewClass)
 		{
 			_Class = StatData->_Class;
 			_MaxHp = StatData->_MaxHp;
-			_Hp = StatData->_MaxHp;
+			SetHp(StatData->_MaxHp);
 			_Speed = StatData->_Speed;
 			_PrimaryDamage = StatData->_PrimaryDamage;
 			_RpmPercent = StatData->_RpmPercent;
@@ -51,10 +50,15 @@ void UMyStatComponent::SetClass(int32 NewClass)
 
 void UMyStatComponent::OnAttacked(float DamageAmount)
 {
-	_Hp -= DamageAmount;
+	int32 NewHp = _Hp - DamageAmount;
+	SetHp(NewHp);
+}
+
+void UMyStatComponent::SetHp(int32 NewHp)
+{
+	_Hp = NewHp;
 	if (_Hp < 0)
 		_Hp = 0;
 
-	UE_LOG(LogTemp, Warning, TEXT("OnAttacked %d"), _Hp);
+	_OnHpChanged.Broadcast();
 }
-
