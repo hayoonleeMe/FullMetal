@@ -15,8 +15,9 @@ class FULLMETAL_API UHUDWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	void BindHp(class UMyStatComponent* StatComp);
+	UHUDWidget();
 
+	void BindHp(class UMyStatComponent* StatComp);
 	void UpdateHp();
 
 private:

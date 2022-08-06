@@ -6,6 +6,11 @@
 #include "Components/TextBlock.h"
 #include "Components/ProgressBar.h"
 
+UHUDWidget::UHUDWidget()
+{
+
+}
+
 void UHUDWidget::BindHp(UMyStatComponent* StatComp)
 {
 	CurrentStatComp = StatComp;
