@@ -5,6 +5,8 @@
 #include "MyStatComponent.generated.h"
 
 DECLARE_MULTICAST_DELEGATE(FOnHpChanged);
+DECLARE_MULTICAST_DELEGATE(FOnRemainAmmoChanged);
+DECLARE_MULTICAST_DELEGATE(FOnMaxAmmoChanged);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class FULLMETAL_API UMyStatComponent : public UActorComponent
@@ -24,6 +26,10 @@ public:
 	void SetClass(int32 NewClass);
 	void OnAttacked(float DamageAmount);
 	void SetHp(int32 NewHp);
+	void OnFired();
+	void SetRemainAmmo(int32 NewAmmo);
+	void SetMaxAmmo(int32 NewAmmo);
+	void OnReloaded();
 
 	int32 GetClass() { return _Class; }
 	int32 GetHp() { return _Hp; }
@@ -34,6 +40,7 @@ public:
 	float GetRpmPercent() { return _RpmPercent; }
 	int32 GetMaxAmmo() { return _MaxAmmo; }
 	int32 GetAmmoCapacity() { return _AmmoCapacity; }
+	int32 GetRemainAmmo() { return _RemainAmmo; }
 
 private:
 	UPROPERTY(EditAnywhere, Category = Stat, Meta = (AllowPrivateAccess = true))
@@ -60,6 +67,11 @@ private:
 	UPROPERTY(EditAnywhere, Category = Stat, Meta = (AllowPrivateAccess = true))
 	int32 _AmmoCapacity;
 
+	UPROPERTY(EditAnywhere, Category = Stat, Meta = (AllowPrivateAccess = true))
+	int32 _RemainAmmo;
+
 public:
 	FOnHpChanged _OnHpChanged;
+	FOnRemainAmmoChanged _OnRemainAmmoChanged;
+	FOnMaxAmmoChanged _OnMaxAmmoChanged;
 };

@@ -29,9 +29,14 @@ public:
 	UFUNCTION()
 	void OnAwakeMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
+	UFUNCTION()
+	void OnReloadMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
 	class UMyStatComponent* GetStatComp() { return _Stat; }
+
+	void Reload();
 
 private:
 	void ForwardBackward(float Value);
@@ -80,6 +85,8 @@ private:
 	bool _bIsAwakeEnded = false;
 	
 	bool _bIsShooting = false;
+
+	bool _bIsReloadEnded = true;
 
 	FName _LeftMuzzleSocket;
 	FName _RightMuzzleSocket;

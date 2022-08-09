@@ -1,6 +1,7 @@
 #include "MyStatComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "MyGameInstance.h"
+#include "Vanguard.h"
 
 // Sets default values for this component's properties
 UMyStatComponent::UMyStatComponent()
@@ -12,7 +13,7 @@ UMyStatComponent::UMyStatComponent()
 	bWantsInitializeComponent = true;
 
 	_Class = 1;	// Vanguard
-}	
+}
 
 // Called when the game starts
 void UMyStatComponent::BeginPlay()
@@ -42,8 +43,9 @@ void UMyStatComponent::SetClass(int32 NewClass)
 			_Speed = StatData->_Speed;
 			_PrimaryDamage = StatData->_PrimaryDamage;
 			_RpmPercent = StatData->_RpmPercent;
-			_MaxAmmo = StatData->_MaxAmmo;
+			SetMaxAmmo(StatData->_MaxAmmo);
 			_AmmoCapacity = StatData->_AmmoCapacity;
+			SetRemainAmmo(StatData->_AmmoCapacity);
 		}
 	}
 }
@@ -61,4 +63,42 @@ void UMyStatComponent::SetHp(int32 NewHp)
 		_Hp = 0;
 
 	_OnHpChanged.Broadcast();
+}
+
+void UMyStatComponent::OnFired()
+{
+	int32 NewAmmo = _RemainAmmo - 1;
+	SetRemainAmmo(NewAmmo);
+}
+
+void UMyStatComponent::SetMaxAmmo(int32 NewAmmo)
+{
+	_MaxAmmo = NewAmmo;
+
+	_OnMaxAmmoChanged.Broadcast();
+}
+
+void UMyStatComponent::SetRemainAmmo(int32 NewAmmo)
+{
+	_RemainAmmo = NewAmmo;
+
+	if (_RemainAmmo <= 0)
+	{
+		// 재장전한다.
+		auto Character = Cast<AVanguard>(GetOwner());
+		if (Character)
+		{
+			Character->Reload();
+		}
+	}
+
+	_OnRemainAmmoChanged.Broadcast();
+}
+
+void UMyStatComponent::OnReloaded()
+{
+	int32 NewAmmo = FMath::Min(_MaxAmmo, _AmmoCapacity - _RemainAmmo);
+
+	SetRemainAmmo(_RemainAmmo + NewAmmo);
+	SetMaxAmmo(_MaxAmmo - NewAmmo);
 }

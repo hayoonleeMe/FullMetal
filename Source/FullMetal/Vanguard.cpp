@@ -158,6 +158,7 @@ void AVanguard::PostInitializeComponents()
 	if (IsValid(_AnimInstance))
 	{
 		_AnimInstance->OnMontageEnded.AddDynamic(this, &AVanguard::OnAwakeMontageEnded);
+		_AnimInstance->OnMontageEnded.AddDynamic(this, &AVanguard::OnReloadMontageEnded);
 	}
 }
 
@@ -218,6 +219,15 @@ void AVanguard::OnAwakeMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 	}
 }
 
+void AVanguard::OnReloadMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+	if (Montage->GetName() == TEXT("Reload_Montage"))
+	{
+		_Stat->OnReloaded();
+		_bIsReloadEnded = true;
+	}
+}
+
 float AVanguard::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	_Stat->OnAttacked(DamageAmount);
@@ -241,6 +251,8 @@ bool AVanguard::GunTrace(FHitResult& Hit)
 
 void AVanguard::Fire()
 {
+	//_Stat->OnAttacked(_Stat->GetPrimaryDamage());
+
 	// UNiagaraComponent의 회전 조정
 	_LeftMuzzleFlash->SetRelativeRotation(FRotator(0, 0, GetController()->GetControlRotation().Pitch * -1));
 	_RightMuzzleFlash->SetRelativeRotation(FRotator(0, 0, GetController()->GetControlRotation().Pitch * -1));
@@ -305,11 +317,17 @@ void AVanguard::Fire()
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, _FireSound, GetActorLocation(), .2f);
 	}
+
+	_Stat->OnFired();
+	_Stat->OnFired();
 }
 
 void AVanguard::StartFire()
 {
 	if (!_bIsAwakeEnded)
+		return;
+
+	if (!_bIsReloadEnded)
 		return;
 
 	_bIsShooting = true;
@@ -337,4 +355,13 @@ void AVanguard::StopFire()
 	_RightMuzzleFlash->Deactivate();
 
 	GetWorldTimerManager().ClearTimer(_TimerHandle_HandleRefire);
+}
+
+void AVanguard::Reload()
+{
+	_bIsReloadEnded = false;
+
+	StopFire();
+
+	_AnimInstance->PlayReloadMontage();
 }

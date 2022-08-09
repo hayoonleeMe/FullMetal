@@ -15,10 +15,12 @@ class FULLMETAL_API UHUDWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	UHUDWidget();
-
-	void BindHp(class UMyStatComponent* StatComp);
+	void BindStat(class UMyStatComponent* StatComp);
 	void UpdateHp();
+	void UpdateRemainAmmo();
+	void UpdateMaxAmmo();
+
+	void Init();
 
 private:
 	TWeakObjectPtr<class UMyStatComponent> CurrentStatComp;
@@ -28,4 +30,10 @@ private:
 
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* TEXT_Hp;
+
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* TEXT_RemainAmmo;
+
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* TEXT_MaxAmmo;
 };

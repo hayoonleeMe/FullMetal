@@ -30,7 +30,8 @@ void AMyGameMode::BeginPlay()
 			auto HUDWidget = Cast<UHUDWidget>(_HUD);
 			if (HUDWidget)
 			{
-				HUDWidget->BindHp(StatComp);
+				HUDWidget->BindStat(StatComp);
+				HUDWidget->Init();
 			}
 		}
 	}

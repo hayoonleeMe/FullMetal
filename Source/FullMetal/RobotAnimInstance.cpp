@@ -25,6 +25,20 @@ URobotAnimInstance::URobotAnimInstance()
 	{
 		_FireMontage = FM.Object;
 	}
+
+	// _ReloadMontage 로드.
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> RM(TEXT("AnimMontage'/Game/Animations/Reload_Montage.Reload_Montage'"));
+	if (RM.Succeeded())
+	{
+		_ReloadMontage = RM.Object;
+	}
+
+	// _ReloadSound 로드
+	static ConstructorHelpers::FObjectFinder<USoundBase> RS(TEXT("SoundWave'/Game/Sounds/Reload.Reload'"));
+	if (RS.Succeeded())
+	{
+		_ReloadSound = RS.Object;
+	}
 }
 
 void URobotAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
@@ -73,6 +87,17 @@ void URobotAnimInstance::PlayFireMontage(bool bIsPlay)
 	else
 	{
 		Montage_Stop(1.f, _FireMontage);
+	}
+}
+
+void URobotAnimInstance::PlayReloadMontage()
+{
+	// 재장전 사운드를 재생한다.
+	if (IsValid(_ReloadSound) && _Character)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, _ReloadSound, _Character->GetActorLocation(), .5f);
+
+		Montage_Play(_ReloadMontage, _ReloadMontage->GetPlayLength() / _ReloadSound->GetDuration());
 	}
 }
 

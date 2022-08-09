@@ -6,15 +6,20 @@
 #include "Components/TextBlock.h"
 #include "Components/ProgressBar.h"
 
-UHUDWidget::UHUDWidget()
+void UHUDWidget::Init()
 {
-
+	// 위젯 초기화
+	UpdateHp();
+	UpdateRemainAmmo();
+	UpdateMaxAmmo();
 }
 
-void UHUDWidget::BindHp(UMyStatComponent* StatComp)
+void UHUDWidget::BindStat(UMyStatComponent* StatComp)
 {
 	CurrentStatComp = StatComp;
 	StatComp->_OnHpChanged.AddUObject(this, &UHUDWidget::UpdateHp);
+	StatComp->_OnRemainAmmoChanged.AddUObject(this, &UHUDWidget::UpdateRemainAmmo);
+	StatComp->_OnMaxAmmoChanged.AddUObject(this, &UHUDWidget::UpdateMaxAmmo);
 }
 
 void UHUDWidget::UpdateHp()
@@ -23,5 +28,23 @@ void UHUDWidget::UpdateHp()
 	{
 		PB_HpBar->SetPercent(CurrentStatComp->GetHpRatio());
 		TEXT_Hp->SetText(FText::AsNumber(CurrentStatComp->GetHp()));
+	}
+}
+
+// TODO : 텍스트 자리수 맞추기
+void UHUDWidget::UpdateRemainAmmo()
+{
+	if (CurrentStatComp.IsValid())
+	{
+		TEXT_RemainAmmo->SetText(FText::FromString(FString::Printf(TEXT("%d"), CurrentStatComp->GetRemainAmmo())));
+	}
+}
+
+// TODO : 텍스트 자리수 맞추기
+void UHUDWidget::UpdateMaxAmmo()
+{
+	if (CurrentStatComp.IsValid())
+	{
+		TEXT_MaxAmmo->SetText(FText::FromString(FString::Printf(TEXT(" / %d"), CurrentStatComp->GetMaxAmmo())));
 	}
 }

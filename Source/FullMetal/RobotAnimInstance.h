@@ -16,6 +16,7 @@ public:
 	
 	void PlayAwakeMontage();
 	void PlayFireMontage(bool bIsPlay);
+	void PlayReloadMontage();
 
 private:
 	UFUNCTION()
@@ -51,4 +52,10 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Robot, meta = (AllowPrivateAccess = true))
 	UAnimMontage* _FireMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Robot, meta = (AllowPrivateAccess = true))
+	UAnimMontage* _ReloadMontage;
+
+	UPROPERTY(EditAnywhere, Category = Weapon)
+	USoundBase* _ReloadSound;
 };
