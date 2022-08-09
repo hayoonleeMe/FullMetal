@@ -119,6 +119,9 @@ void AVanguard::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Pressed, this, &AVanguard::StartFire);
 	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Released, this, &AVanguard::StopFire);
 
+	// 재장전
+	PlayerInputComponent->BindAction(TEXT("Reload"), IE_Pressed, this, &AVanguard::Reload);
+
 	// 앞, 뒤, 좌, 우 이동
 	PlayerInputComponent->BindAxis(TEXT("ForwardBackward"), this,  &AVanguard::ForwardBackward);
 	PlayerInputComponent->BindAxis(TEXT("RightLeft"), this, &AVanguard::RightLeft);
@@ -359,6 +362,12 @@ void AVanguard::StopFire()
 
 void AVanguard::Reload()
 {
+	if (_Stat->GetRemainAmmo() == _Stat->GetAmmoCapacity())
+		return;
+
+	if (!_bIsReloadEnded)
+		return;
+
 	_bIsReloadEnded = false;
 
 	StopFire();
