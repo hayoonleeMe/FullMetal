@@ -228,6 +228,12 @@ void AVanguard::OnReloadMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 	{
 		_Stat->OnReloaded();
 		_bIsReloadEnded = true;
+
+		// 재장전 중에 계속 발사버튼을 누르고 있다면 재장전이 끝나고 바로 발사
+		if (GetController<APlayerController>()->IsInputKeyDown(EKeys::LeftMouseButton))
+		{
+			StartFire();
+		}
 	}
 }
 
@@ -318,7 +324,8 @@ void AVanguard::Fire()
 	// 발사 소리 재생
 	if (IsValid(_FireSound))
 	{
-		UGameplayStatics::PlaySoundAtLocation(this, _FireSound, GetActorLocation(), .2f);
+		UGameplayStatics::PlaySoundAtLocation(this, _FireSound, LeftMuzzleLocation, .2f);
+		UGameplayStatics::PlaySoundAtLocation(this, _FireSound, RightMuzzleLocation, .2f);
 	}
 
 	_Stat->OnFired();
