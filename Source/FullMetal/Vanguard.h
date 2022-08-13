@@ -4,6 +4,8 @@
 #include "GameFramework/Character.h"
 #include "Vanguard.generated.h"
 
+DECLARE_MULTICAST_DELEGATE(FOnFireEnded);
+
 UCLASS()
 class FULLMETAL_API AVanguard : public ACharacter
 {
@@ -35,6 +37,11 @@ public:
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
 	class UMyStatComponent* GetStatComp() { return _Stat; }
+	bool IsShooting() { return _bIsShooting; }
+
+	void Fire();
+	void StartFire();
+	void StopFire();
 
 	void Reload();
 
@@ -44,9 +51,6 @@ private:
 	void TurnRightLeft(float Value);
 	void LookUpDown(float Value);
 
-	void StartFire();
-	void StopFire();
-	void Fire();
 	bool GunTrace(FHitResult& Hit);
 
 private:
@@ -100,4 +104,6 @@ public:
 	float _RightLeftValue = 0;
 
 	FRotator _UpDown;
+
+	FOnFireEnded _OnFireEnded;
 };

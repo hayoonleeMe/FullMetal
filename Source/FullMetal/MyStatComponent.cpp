@@ -46,6 +46,7 @@ void UMyStatComponent::SetClass(int32 NewClass)
 			SetMaxAmmo(StatData->_MaxAmmo);
 			_AmmoCapacity = StatData->_AmmoCapacity;
 			SetRemainAmmo(StatData->_AmmoCapacity);
+			_MaxRange = StatData->_MaxRange;
 		}
 	}
 }

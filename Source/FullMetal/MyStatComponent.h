@@ -41,6 +41,7 @@ public:
 	int32 GetMaxAmmo() { return _MaxAmmo; }
 	int32 GetAmmoCapacity() { return _AmmoCapacity; }
 	int32 GetRemainAmmo() { return _RemainAmmo; }
+	float GetMaxRange() { return _MaxRange;	}
 
 private:
 	UPROPERTY(EditAnywhere, Category = Stat, Meta = (AllowPrivateAccess = true))
@@ -69,6 +70,9 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = Stat, Meta = (AllowPrivateAccess = true))
 	int32 _RemainAmmo;
+
+	UPROPERTY(EditAnywhere, Category = Stat, Meta = (AllowPrivateAccess = true))
+	float _MaxRange;
 
 public:
 	FOnHpChanged _OnHpChanged;

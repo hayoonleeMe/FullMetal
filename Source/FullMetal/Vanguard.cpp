@@ -13,12 +13,17 @@
 #include "MyStatComponent.h"
 #include "MyGameInstance.h"
 #include "HUDWidget.h"
+#include "RobotAIController.h"
 
 // Sets default values
 AVanguard::AVanguard()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+	// AI 컨트롤러 설정
+	AIControllerClass = ARobotAIController::StaticClass();
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
 	// TODO : 콜리전 범위 수정 필요
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
@@ -88,6 +93,11 @@ void AVanguard::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	if (GetController()->IsPlayerController())
+		GetMesh()->SetCollisionProfileName(TEXT("Player"));
+	else
+		GetMesh()->SetCollisionProfileName(TEXT("Enemy"));
+
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 	_AnimInstance->PlayAwakeMontage();
 }
@@ -230,9 +240,12 @@ void AVanguard::OnReloadMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 		_bIsReloadEnded = true;
 
 		// 재장전 중에 계속 발사버튼을 누르고 있다면 재장전이 끝나고 바로 발사
-		if (GetController<APlayerController>()->IsInputKeyDown(EKeys::LeftMouseButton))
+		if (GetController<APlayerController>())
 		{
-			StartFire();
+			if (GetController<APlayerController>()->IsInputKeyDown(EKeys::LeftMouseButton))
+			{
+				StartFire();
+			}
 		}
 	}
 }
@@ -318,18 +331,19 @@ void AVanguard::Fire()
 	ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
 	// 총알 동선을 따라가는 총알 생성
-	GetWorld()->SpawnActor<AActor>(_ProjectileClass, LeftTransform, ActorSpawnParams);
-	GetWorld()->SpawnActor<AActor>(_ProjectileClass, RightTransform, ActorSpawnParams);
+	AActor* LeftBullet = GetWorld()->SpawnActor<AActor>(_ProjectileClass, LeftTransform, ActorSpawnParams);
+	AActor* RightBullet = GetWorld()->SpawnActor<AActor>(_ProjectileClass, RightTransform, ActorSpawnParams);
 
 	// 발사 소리 재생
 	if (IsValid(_FireSound))
 	{
-		UGameplayStatics::PlaySoundAtLocation(this, _FireSound, LeftMuzzleLocation, .2f);
-		UGameplayStatics::PlaySoundAtLocation(this, _FireSound, RightMuzzleLocation, .2f);
+		UGameplayStatics::PlaySoundAtLocation(this, _FireSound, GetActorLocation(), .2f);
 	}
 
 	_Stat->OnFired();
 	_Stat->OnFired();
+
+	_OnFireEnded.Broadcast();
 }
 
 void AVanguard::StartFire()

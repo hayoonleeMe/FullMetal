@@ -31,6 +31,9 @@ struct FClassData : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 _AmmoCapacity;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float _MaxRange;
 };
 
 UCLASS()

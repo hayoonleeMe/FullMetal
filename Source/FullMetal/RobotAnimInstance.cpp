@@ -63,7 +63,7 @@ void URobotAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		_IsFalling = _Character->GetMovementComponent()->IsFalling();
 
 		FVector Accel = _Character->GetCharacterMovement()->GetCurrentAcceleration();
-		_ShouldMove = (_Velocity.Size() > 3.f) && (Accel.X != 0 || Accel.Y != 0);
+		_ShouldMove = (_Velocity.Size() > 3.f)/* && (Accel.X != 0 || Accel.Y != 0)*/;
 
 		_Horizontal = _Character->_RightLeftValue;
 		_Vertical = _Character->_ForwardBackwardValue;
