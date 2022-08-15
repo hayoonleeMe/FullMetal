@@ -4,18 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTTaskNode.h"
-#include "BTTask_Fire.generated.h"
+#include "BTTask_StartFire.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class FULLMETAL_API UBTTask_Fire : public UBTTaskNode
+class FULLMETAL_API UBTTask_StartFire : public UBTTaskNode
 {
 	GENERATED_BODY()
 	
 public:
-	UBTTask_Fire();
+	UBTTask_StartFire();
 
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 

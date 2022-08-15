@@ -1,19 +1,19 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "BTTask_Fire.h"
+#include "BTTask_StartFire.h"
 #include "Vanguard.h"
 #include "RobotAIController.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
-UBTTask_Fire::UBTTask_Fire()
+UBTTask_StartFire::UBTTask_StartFire()
 {
 	NodeName = TEXT("StartFire");
 	bNotifyTick = true;
 }
 
-EBTNodeResult::Type UBTTask_Fire::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+EBTNodeResult::Type UBTTask_StartFire::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	EBTNodeResult::Type Result = Super::ExecuteTask(OwnerComp, NodeMemory);
 
@@ -27,7 +27,7 @@ EBTNodeResult::Type UBTTask_Fire::ExecuteTask(UBehaviorTreeComponent& OwnerComp,
 	return EBTNodeResult::InProgress;
 }
 
-void UBTTask_Fire::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
+void UBTTask_StartFire::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
 	Super::TickTask(OwnerComp, NodeMemory, DeltaSeconds);
 
